@@ -135,7 +135,6 @@ dmypy.json
 .idea/
 
 # Xcode
-*.xcworkspace
 xcuserdata/
 
 # EdgeVLM models
