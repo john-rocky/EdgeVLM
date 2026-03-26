@@ -136,6 +136,9 @@ dmypy.json
 
 # Xcode
 *.xcworkspace
+xcuserdata/
 
-# FastVLM models
-app/FastVLM/model
+# EdgeVLM models
+app/EdgeVLM/model
+checkpoints/
+*.backup

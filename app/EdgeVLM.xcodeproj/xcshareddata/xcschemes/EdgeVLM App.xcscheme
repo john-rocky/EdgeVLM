@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "019A3E092D78E6A00055F93B"
-               BuildableName = "FastVLM App.app"
-               BlueprintName = "FastVLM App"
-               ReferencedContainer = "container:FastVLM.xcodeproj">
+               BuildableName = "EdgeVLM App.app"
+               BlueprintName = "EdgeVLM App"
+               ReferencedContainer = "container:EdgeVLM.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "019A3E092D78E6A00055F93B"
-            BuildableName = "FastVLM App.app"
-            BlueprintName = "FastVLM App"
-            ReferencedContainer = "container:FastVLM.xcodeproj">
+            BuildableName = "EdgeVLM App.app"
+            BlueprintName = "EdgeVLM App"
+            ReferencedContainer = "container:EdgeVLM.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "019A3E092D78E6A00055F93B"
-            BuildableName = "FastVLM App.app"
-            BlueprintName = "FastVLM App"
-            ReferencedContainer = "container:FastVLM.xcodeproj">
+            BuildableName = "EdgeVLM App.app"
+            BlueprintName = "EdgeVLM App"
+            ReferencedContainer = "container:EdgeVLM.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

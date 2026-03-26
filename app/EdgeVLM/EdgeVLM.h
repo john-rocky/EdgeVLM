@@ -3,8 +3,8 @@
 // Copyright (C) 2025 Apple Inc. All Rights Reserved.
 //
 
-#ifndef FastVLM_h
-#define FastVLM_h
+#ifndef EdgeVLM_h
+#define EdgeVLM_h
 
 
-#endif /* FastVLM_h */
+#endif /* EdgeVLM_h */

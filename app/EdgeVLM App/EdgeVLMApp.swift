@@ -6,7 +6,7 @@
 import SwiftUI
 
 @main
-struct FastVLMApp: App {
+struct EdgeVLMApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -4,7 +4,7 @@
 //
 
 import CoreImage
-import FastVLM
+import EdgeVLM
 import Foundation
 import MLX
 import MLXLMCommon
@@ -13,7 +13,7 @@ import MLXVLM
 
 @Observable
 @MainActor
-class FastVLMModel {
+class EdgeVLMModel {
 
     public var running = false
     public var modelInfo = ""
@@ -25,7 +25,7 @@ class FastVLMModel {
         case loaded(ModelContainer)
     }
 
-    private let modelConfiguration = FastVLM.modelConfiguration
+    private let modelConfiguration = EdgeVLM.modelConfiguration
 
     /// parameters controlling the output
     let generateParameters = GenerateParameters(temperature: 0.0)
@@ -48,7 +48,7 @@ class FastVLMModel {
     public var evaluationState = EvaluationState.idle
 
     public init() {
-        FastVLM.register(modelFactory: VLMModelFactory.shared)
+        EdgeVLM.register(modelFactory: VLMModelFactory.shared)
     }
 
     private func _load() async throws -> ModelContainer {
@@ -116,7 +116,7 @@ class FastVLMModel {
                     
                     var seenFirstToken = false
 
-                    // FastVLM generates the output
+                    // EdgeVLM generates the output
                     let result = try MLXLMCommon.generate(
                         input: input, parameters: generateParameters, context: context
                     ) { tokens in

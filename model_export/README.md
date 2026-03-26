@@ -7,13 +7,13 @@ predominantly used in third party libraries like `mlx-vlm`. We save additional m
 to model checkpoint directory and export the vision model using coremltools. 
 Export vision encoder and patch the checkpoint using the instruction below. 
 ```bash
-python export_vision_encoder.py --model-path /path/to/fastvlm-checkpoint
+python export_vision_encoder.py --model-path /path/to/edgevlm-checkpoint
 ```
 
 ## Export VLM 
 
 ### Install mlx-vlm
-We provide a patch to `mlx-vlm` to support inference of FastVLM.
+We provide a patch to `mlx-vlm` to support inference of EdgeVLM.
 ```bash
 git clone https://github.com/Blaizzy/mlx-vlm.git
 cd mlx-vlm 
@@ -24,15 +24,15 @@ pip install -e .
 
 Export model using the following instruction.
 ```bash
-python -m mlx_vlm.convert --hf-path  /path/to/fastvlm-checkpoint \
-                          --mlx-path /path/to/exported-fastvlm \
+python -m mlx_vlm.convert --hf-path  /path/to/edgevlm-checkpoint \
+                          --mlx-path /path/to/exported-edgevlm \
                           --only-llm
 ```
 To quantize the LLM, additional options can be provided as shown below.
 `--q-bits` specifies bits per weight, the command below exports the LLM with 8-bit quantization. 
 ```bash
-python -m mlx_vlm.convert --hf-path  /path/to/fastvlm-checkpoint \
-                          --mlx-path /path/to/exported-fastvlm \
+python -m mlx_vlm.convert --hf-path  /path/to/edgevlm-checkpoint \
+                          --mlx-path /path/to/exported-edgevlm \
                           --only-llm \
                           -q \
                           --q-bits 8       # For 4-bit quantization, specify 4
@@ -41,7 +41,7 @@ python -m mlx_vlm.convert --hf-path  /path/to/fastvlm-checkpoint \
 ### Generate
 The exported model can be used for inference in a python environment following the instruction below.
 ```bash
-python -m mlx_vlm.generate --model /path/to/exported-fastvlm \
+python -m mlx_vlm.generate --model /path/to/exported-edgevlm \
                            --image /path/to/image.png \
                            --prompt "Describe the image." \ 
                            --max-tokens 256 \

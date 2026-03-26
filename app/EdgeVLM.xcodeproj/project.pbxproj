@@ -19,8 +19,8 @@
 		C3ED54542D790860005E20B3 /* MLXNN in Frameworks */ = {isa = PBXBuildFile; productRef = C3ED54532D790860005E20B3 /* MLXNN */; };
 		C3ED54582D790A68005E20B3 /* MLXFast in Frameworks */ = {isa = PBXBuildFile; productRef = C3ED54572D790A68005E20B3 /* MLXFast */; };
 		C3ED545B2D790AD6005E20B3 /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = C3ED545A2D790AD6005E20B3 /* Transformers */; };
-		C3ED55012D7A0A7A005E20B3 /* FastVLM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C39BB3E62D79082A005DB8FB /* FastVLM.framework */; };
-		C3ED55022D7A0A7A005E20B3 /* FastVLM.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C39BB3E62D79082A005DB8FB /* FastVLM.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C3ED55012D7A0A7A005E20B3 /* EdgeVLM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C39BB3E62D79082A005DB8FB /* EdgeVLM.framework */; };
+		C3ED55022D7A0A7A005E20B3 /* EdgeVLM.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C39BB3E62D79082A005DB8FB /* EdgeVLM.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +36,7 @@
 			containerPortal = C35EDB642D07699400757E80 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C39BB3E52D79082A005DB8FB;
-			remoteInfo = FastVLM;
+			remoteInfo = EdgeVLM;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -47,7 +47,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				C3ED55022D7A0A7A005E20B3 /* FastVLM.framework in Embed Frameworks */,
+				C3ED55022D7A0A7A005E20B3 /* EdgeVLM.framework in Embed Frameworks */,
 				019A3E222D78E7530055F93B /* Video.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -56,21 +56,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		019A3E0A2D78E6A00055F93B /* FastVLM App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "FastVLM App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		019A3E0A2D78E6A00055F93B /* EdgeVLM App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "EdgeVLM App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		12FFAF3D2DC93583009C4EFA /* get_pretrained_mlx_model.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = get_pretrained_mlx_model.sh; sourceTree = "<group>"; };
 		12FFAF3E2DC93583009C4EFA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C35372AE2D08C32D00474D34 /* Video.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Video.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C39BB3E62D79082A005DB8FB /* FastVLM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FastVLM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C39BB3E62D79082A005DB8FB /* EdgeVLM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EdgeVLM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		120A44852D9B05A900E244A3 /* Exceptions for "FastVLM App" folder in "FastVLM App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 019A3E092D78E6A00055F93B /* FastVLM App */;
-		};
 		C35372B92D08C32D00474D34 /* Exceptions for "Video" folder in "Video" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
@@ -78,22 +71,12 @@
 			);
 			target = C35372AD2D08C32D00474D34 /* Video */;
 		};
-		C3ED54BB2D791BEA005E20B3 /* Exceptions for "FastVLM" folder in "FastVLM" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			publicHeaders = (
-				FastVLM.h,
-			);
-			target = C39BB3E52D79082A005DB8FB /* FastVLM */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		019A3E0B2D78E6A00055F93B /* FastVLM App */ = {
+		019A3E0B2D78E6A00055F93B /* EdgeVLM App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				120A44852D9B05A900E244A3 /* Exceptions for "FastVLM App" folder in "FastVLM App" target */,
-			);
-			path = "FastVLM App";
+			path = "EdgeVLM App";
 			sourceTree = "<group>";
 		};
 		C32B4A802DA4805400EF663D /* Configuration */ = {
@@ -109,12 +92,9 @@
 			path = Video;
 			sourceTree = "<group>";
 		};
-		C39BB3E72D79082A005DB8FB /* FastVLM */ = {
+		C39BB3E72D79082A005DB8FB /* EdgeVLM */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C3ED54BB2D791BEA005E20B3 /* Exceptions for "FastVLM" folder in "FastVLM" target */,
-			);
-			path = FastVLM;
+			path = EdgeVLM;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -126,7 +106,7 @@
 			files = (
 				019A3E1C2D78E73E0055F93B /* MLXLMCommon in Frameworks */,
 				019A3E212D78E7530055F93B /* Video.framework in Frameworks */,
-				C3ED55012D7A0A7A005E20B3 /* FastVLM.framework in Frameworks */,
+				C3ED55012D7A0A7A005E20B3 /* EdgeVLM.framework in Frameworks */,
 				019A3E1E2D78E7470055F93B /* MLXRandom in Frameworks */,
 				019A3E202D78E74C0055F93B /* MLXVLM in Frameworks */,
 				019A3E1A2D78E7370055F93B /* MLX in Frameworks */,
@@ -163,8 +143,8 @@
 				12FFAF3D2DC93583009C4EFA /* get_pretrained_mlx_model.sh */,
 				C32B4A802DA4805400EF663D /* Configuration */,
 				C35372AF2D08C32D00474D34 /* Video */,
-				019A3E0B2D78E6A00055F93B /* FastVLM App */,
-				C39BB3E72D79082A005DB8FB /* FastVLM */,
+				019A3E0B2D78E6A00055F93B /* EdgeVLM App */,
+				C39BB3E72D79082A005DB8FB /* EdgeVLM */,
 				C35EDB7F2D076C3C00757E80 /* Frameworks */,
 				C35EDB702D076A5A00757E80 /* Products */,
 			);
@@ -174,8 +154,8 @@
 			isa = PBXGroup;
 			children = (
 				C35372AE2D08C32D00474D34 /* Video.framework */,
-				019A3E0A2D78E6A00055F93B /* FastVLM App.app */,
-				C39BB3E62D79082A005DB8FB /* FastVLM.framework */,
+				019A3E0A2D78E6A00055F93B /* EdgeVLM App.app */,
+				C39BB3E62D79082A005DB8FB /* EdgeVLM.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -207,9 +187,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		019A3E092D78E6A00055F93B /* FastVLM App */ = {
+		019A3E092D78E6A00055F93B /* EdgeVLM App */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 019A3E182D78E6A20055F93B /* Build configuration list for PBXNativeTarget "FastVLM App" */;
+			buildConfigurationList = 019A3E182D78E6A20055F93B /* Build configuration list for PBXNativeTarget "EdgeVLM App" */;
 			buildPhases = (
 				019A3E062D78E6A00055F93B /* Sources */,
 				019A3E072D78E6A00055F93B /* Frameworks */,
@@ -223,17 +203,17 @@
 				C3ED55042D7A0A7A005E20B3 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				019A3E0B2D78E6A00055F93B /* FastVLM App */,
+				019A3E0B2D78E6A00055F93B /* EdgeVLM App */,
 			);
-			name = "FastVLM App";
+			name = "EdgeVLM App";
 			packageProductDependencies = (
 				019A3E192D78E7370055F93B /* MLX */,
 				019A3E1B2D78E73E0055F93B /* MLXLMCommon */,
 				019A3E1D2D78E7470055F93B /* MLXRandom */,
 				019A3E1F2D78E74C0055F93B /* MLXVLM */,
 			);
-			productName = FastVLMCameraExample;
-			productReference = 019A3E0A2D78E6A00055F93B /* FastVLM App.app */;
+			productName = EdgeVLMCameraExample;
+			productReference = 019A3E0A2D78E6A00055F93B /* EdgeVLM App.app */;
 			productType = "com.apple.product-type.application";
 		};
 		C35372AD2D08C32D00474D34 /* Video */ = {
@@ -259,9 +239,9 @@
 			productReference = C35372AE2D08C32D00474D34 /* Video.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		C39BB3E52D79082A005DB8FB /* FastVLM */ = {
+		C39BB3E52D79082A005DB8FB /* EdgeVLM */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C39BB3FF2D79082A005DB8FB /* Build configuration list for PBXNativeTarget "FastVLM" */;
+			buildConfigurationList = C39BB3FF2D79082A005DB8FB /* Build configuration list for PBXNativeTarget "EdgeVLM" */;
 			buildPhases = (
 				C39BB3E12D79082A005DB8FB /* Headers */,
 				C39BB3E22D79082A005DB8FB /* Sources */,
@@ -273,9 +253,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C39BB3E72D79082A005DB8FB /* FastVLM */,
+				C39BB3E72D79082A005DB8FB /* EdgeVLM */,
 			);
-			name = FastVLM;
+			name = EdgeVLM;
 			packageProductDependencies = (
 				C3ED544D2D790860005E20B3 /* MLXLMCommon */,
 				C3ED544F2D790860005E20B3 /* MLXVLM */,
@@ -284,8 +264,8 @@
 				C3ED54572D790A68005E20B3 /* MLXFast */,
 				C3ED545A2D790AD6005E20B3 /* Transformers */,
 			);
-			productName = FastVLM;
-			productReference = C39BB3E62D79082A005DB8FB /* FastVLM.framework */;
+			productName = EdgeVLM;
+			productReference = C39BB3E62D79082A005DB8FB /* EdgeVLM.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -310,7 +290,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C35EDB672D07699400757E80 /* Build configuration list for PBXProject "FastVLM" */;
+			buildConfigurationList = C35EDB672D07699400757E80 /* Build configuration list for PBXProject "EdgeVLM" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -330,8 +310,8 @@
 			projectRoot = "";
 			targets = (
 				C35372AD2D08C32D00474D34 /* Video */,
-				019A3E092D78E6A00055F93B /* FastVLM App */,
-				C39BB3E52D79082A005DB8FB /* FastVLM */,
+				019A3E092D78E6A00055F93B /* EdgeVLM App */,
+				C39BB3E52D79082A005DB8FB /* EdgeVLM */,
 			);
 		};
 /* End PBXProject section */
@@ -392,7 +372,7 @@
 		};
 		C3ED55042D7A0A7A005E20B3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C39BB3E52D79082A005DB8FB /* FastVLM */;
+			target = C39BB3E52D79082A005DB8FB /* EdgeVLM */;
 			targetProxy = C3ED55032D7A0A7A005E20B3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -433,14 +413,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = "FastVLM App/FastVLM.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "EdgeVLM App/EdgeVLM.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 0.1.0;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_ASSET_PATHS = "\"FastVLM App/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_ASSET_PATHS = "\"EdgeVLM App/Preview Content\"";
+				DEVELOPMENT_TEAM = MFN25KNUGJ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -461,8 +441,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "FastVLM App/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = FastVLM;
+				INFOPLIST_FILE = "EdgeVLM App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = EdgeVLM;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use camera to get live feed of images";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -483,7 +463,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.apple.ml.FastVLM;
+				PRODUCT_BUNDLE_IDENTIFIER = com.daisukemajima.EdgeVLM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -531,14 +511,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = "FastVLM App/FastVLM.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "EdgeVLM App/EdgeVLM.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 0.1.0;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_ASSET_PATHS = "\"FastVLM App/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_ASSET_PATHS = "\"EdgeVLM App/Preview Content\"";
+				DEVELOPMENT_TEAM = MFN25KNUGJ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
@@ -553,8 +533,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "FastVLM App/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = FastVLM;
+				INFOPLIST_FILE = "EdgeVLM App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = EdgeVLM;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use camera to get live feed of images";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -574,7 +554,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.apple.ml.FastVLM;
+				PRODUCT_BUNDLE_IDENTIFIER = com.daisukemajima.EdgeVLM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -935,7 +915,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = mlx.FastVLM;
+				PRODUCT_BUNDLE_IDENTIFIER = mlx.EdgeVLM;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
@@ -1028,7 +1008,7 @@
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = mlx.FastVLM;
+				PRODUCT_BUNDLE_IDENTIFIER = mlx.EdgeVLM;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
@@ -1047,7 +1027,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		019A3E182D78E6A20055F93B /* Build configuration list for PBXNativeTarget "FastVLM App" */ = {
+		019A3E182D78E6A20055F93B /* Build configuration list for PBXNativeTarget "EdgeVLM App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				019A3E162D78E6A20055F93B /* Debug */,
@@ -1065,7 +1045,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C35EDB672D07699400757E80 /* Build configuration list for PBXProject "FastVLM" */ = {
+		C35EDB672D07699400757E80 /* Build configuration list for PBXProject "EdgeVLM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C35EDB682D07699400757E80 /* Debug */,
@@ -1074,7 +1054,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C39BB3FF2D79082A005DB8FB /* Build configuration list for PBXNativeTarget "FastVLM" */ = {
+		C39BB3FF2D79082A005DB8FB /* Build configuration list for PBXNativeTarget "EdgeVLM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C39BB3FB2D79082A005DB8FB /* Debug */,

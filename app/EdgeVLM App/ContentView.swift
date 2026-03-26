@@ -17,7 +17,7 @@ let FRAME_DELAY = Duration.milliseconds(1)
 
 struct ContentView: View {
     @State private var camera = CameraController()
-    @State private var model = FastVLMModel()
+    @State private var model = EdgeVLMModel()
 
     /// stream of frames -> VideoFrameView, see distributeVideoFrames
     @State private var framesToDisplay: AsyncStream<CVImageBuffer>?
@@ -227,7 +227,7 @@ struct ContentView: View {
                 await distributeVideoFrames()
             }
 
-            .navigationTitle("FastVLM")
+            .navigationTitle("EdgeVLM")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -427,7 +427,7 @@ struct ContentView: View {
         }
     }
 
-    /// Perform FastVLM inference on a single frame.
+    /// Perform EdgeVLM inference on a single frame.
     /// - Parameter frame: The frame to analyze.
     func processSingleFrame(_ frame: CVImageBuffer) {
         // Reset Response UI (show spinner)
@@ -441,7 +441,7 @@ struct ContentView: View {
             images: [.ciImage(CIImage(cvPixelBuffer: frame))]
         )
 
-        // Post request to FastVLM
+        // Post request to EdgeVLM
         Task {
             await model.generate(userInput)
         }

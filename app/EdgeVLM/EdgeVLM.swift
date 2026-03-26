@@ -13,7 +13,7 @@ import MLXNN
 import MLXVLM
 import Tokenizers
 
-// FastVLM is Qwen2VL with a custom vision tower.
+// EdgeVLM is Qwen2VL with a custom vision tower.
 
 // MARK: - Common
 
@@ -71,7 +71,7 @@ private enum Language {
 
         @ModuleInfo(key: "rotary_emb") var rotaryEmbedding: RoPE
 
-        public init(_ args: FastVLMConfiguration.TextConfiguration) {
+        public init(_ args: EdgeVLMConfiguration.TextConfiguration) {
             let dim = args.hiddenSize
             self.heads = args.attentionHeads
             self.kvHeads = args.kvHeads
@@ -153,7 +153,7 @@ private enum Language {
         }
     }
 
-    fileprivate class FastVLMDecoderLayer: Module {
+    fileprivate class EdgeVLMDecoderLayer: Module {
 
         @ModuleInfo(key: "self_attn") var attention: Attention
         let mlp: MLP
@@ -161,7 +161,7 @@ private enum Language {
         @ModuleInfo(key: "input_layernorm") var inputLayerNorm: RMSNorm
         @ModuleInfo(key: "post_attention_layernorm") var postAttentionLayerNorm: RMSNorm
 
-        public init(_ args: FastVLMConfiguration.TextConfiguration) {
+        public init(_ args: EdgeVLMConfiguration.TextConfiguration) {
             self._attention.wrappedValue = Attention(args)
             self.mlp = MLP(dimensions: args.hiddenSize, hiddenDimensions: args.intermediateSize)
             self._inputLayerNorm.wrappedValue = RMSNorm(
@@ -185,10 +185,10 @@ private enum Language {
 
         @ModuleInfo(key: "embed_tokens") var embedTokens: Embedding
 
-        fileprivate let layers: [FastVLMDecoderLayer]
+        fileprivate let layers: [EdgeVLMDecoderLayer]
         fileprivate let norm: RMSNorm
 
-        public init(_ args: FastVLMConfiguration.TextConfiguration) {
+        public init(_ args: EdgeVLMConfiguration.TextConfiguration) {
             precondition(args.vocabularySize > 0)
 
             self._embedTokens.wrappedValue = Embedding(
@@ -196,7 +196,7 @@ private enum Language {
 
             self.layers = (0 ..< args.hiddenLayers)
                 .map { _ in
-                    FastVLMDecoderLayer(args)
+                    EdgeVLMDecoderLayer(args)
                 }
             self.norm = RMSNorm(dimensions: args.hiddenSize, eps: args.rmsNormEps)
         }
@@ -229,7 +229,7 @@ private enum Language {
 
         var kvHeads: [Int]
 
-        public init(_ args: FastVLMConfiguration.TextConfiguration) {
+        public init(_ args: EdgeVLMConfiguration.TextConfiguration) {
             self.model = Qwen2Model(args)
 
             if !args.tieWordEmbeddings {
@@ -323,17 +323,17 @@ private enum Vision {
 
 // MARK: - Processor
 
-/// FastVLM `UserInputProcessor`.
+/// EdgeVLM `UserInputProcessor`.
 ///
-/// This is meant to be used with ``FastVLM`` and is typically created by ``VLMModelFactory``.
-public class FastVLMProcessor: UserInputProcessor {
+/// This is meant to be used with ``EdgeVLM`` and is typically created by ``VLMModelFactory``.
+public class EdgeVLMProcessor: UserInputProcessor {
 
-    private let config: FastVLMProcessorConfiguration
-    private let imageProcessingConfig: FastVLMPreProcessorConfiguration
+    private let config: EdgeVLMProcessorConfiguration
+    private let imageProcessingConfig: EdgeVLMPreProcessorConfiguration
     private let tokenizer: any Tokenizer
 
-    public init(_ config: FastVLMPreProcessorConfiguration, tokenizer: any Tokenizer) {
-        self.config = FastVLMProcessorConfiguration()
+    public init(_ config: EdgeVLMPreProcessorConfiguration, tokenizer: any Tokenizer) {
+        self.config = EdgeVLMProcessorConfiguration()
         self.imageProcessingConfig = config
         self.tokenizer = tokenizer
     }
@@ -425,13 +425,13 @@ public class FastVLMProcessor: UserInputProcessor {
 
 // MARK: - Model
 
-private class FastVLMMultiModalProjector: Module, UnaryLayer {
+private class EdgeVLMMultiModalProjector: Module, UnaryLayer {
 
     @ModuleInfo(key: "linear_0") var linear0: Linear
     @ModuleInfo(key: "gelu") var gelu: GELU
     @ModuleInfo(key: "linear_2") var linear2: Linear
 
-    public init(_ config: FastVLMConfiguration) {
+    public init(_ config: EdgeVLMConfiguration) {
         self._linear0.wrappedValue = Linear(
             config.visionConfiguration.hiddenSize,
             config.textConfiguration.hiddenSize,
@@ -451,13 +451,13 @@ private class FastVLMMultiModalProjector: Module, UnaryLayer {
     }
 }
 
-/// FastVLM
+/// EdgeVLM
 ///
 /// This is typically created by ``VLMModelFactory``.
-public class FastVLM: Module, VLMModel, KVCacheDimensionProvider {
+public class EdgeVLM: Module, VLMModel, KVCacheDimensionProvider {
 
     static public var modelConfiguration: ModelConfiguration {
-        let bundle = Bundle(for: FastVLM.self)
+        let bundle = Bundle(for: EdgeVLM.self)
         let url = bundle.url(forResource: "config", withExtension: "json")!
             .resolvingSymlinksInPath()
             .deletingLastPathComponent()
@@ -467,23 +467,23 @@ public class FastVLM: Module, VLMModel, KVCacheDimensionProvider {
     static public func register(modelFactory: VLMModelFactory) {
         modelFactory.typeRegistry.registerModelType("llava_qwen2") { url in
             let configuration = try JSONDecoder().decode(
-                FastVLMConfiguration.self, from: Data(contentsOf: url))
-            return FastVLM(configuration)
+                EdgeVLMConfiguration.self, from: Data(contentsOf: url))
+            return EdgeVLM(configuration)
         }
 
         modelFactory.processorRegistry.registerProcessorType("LlavaProcessor") { url, tokenizer in
             let configuration = try JSONDecoder().decode(
-                FastVLMPreProcessorConfiguration.self, from: Data(contentsOf: url))
-            return FastVLMProcessor(configuration, tokenizer: tokenizer)
+                EdgeVLMPreProcessorConfiguration.self, from: Data(contentsOf: url))
+            return EdgeVLMProcessor(configuration, tokenizer: tokenizer)
         }
     }
 
     @ModuleInfo(key: "vision_tower") private var visionModel: Vision.VisionModel
     @ModuleInfo(key: "language_model") private var languageModel: Language.LanguageModel
     @ModuleInfo(key: "multi_modal_projector") private var multiModalProjector:
-        FastVLMMultiModalProjector
+        EdgeVLMMultiModalProjector
 
-    public let config: FastVLMConfiguration
+    public let config: EdgeVLMConfiguration
 
     public var vocabularySize: Int { config.baseConfiguration.vocabularySize }
     public var kvHeads: [Int] { languageModel.kvHeads }
@@ -492,11 +492,11 @@ public class FastVLM: Module, VLMModel, KVCacheDimensionProvider {
         languageModel.model.layers.map { ($0.attention, ["q_proj", "v_proj"]) }
     }
 
-    public init(_ config: FastVLMConfiguration) {
+    public init(_ config: EdgeVLMConfiguration) {
         self.config = config
         self._visionModel.wrappedValue = Vision.VisionModel()
         self._languageModel.wrappedValue = Language.LanguageModel(config.textConfiguration)
-        self._multiModalProjector.wrappedValue = FastVLMMultiModalProjector(config)
+        self._multiModalProjector.wrappedValue = EdgeVLMMultiModalProjector(config)
     }
 
     private func inputEmbeddings(inputIds: MLXArray, pixelValues: MLXArray?, gridThw: [THW]?)
@@ -563,8 +563,8 @@ public class FastVLM: Module, VLMModel, KVCacheDimensionProvider {
 
 // MARK: - Configuration
 
-/// Configuration for ``FastVLM``
-public struct FastVLMConfiguration: Codable, Sendable {
+/// Configuration for ``EdgeVLM``
+public struct EdgeVLMConfiguration: Codable, Sendable {
 
     public struct VisionConfiguration: Codable, Sendable {
         public let hiddenSize: Int
@@ -640,8 +640,8 @@ public struct FastVLMConfiguration: Codable, Sendable {
     }
 }
 
-/// Configuration for ``FastVLMProcessor``
-public struct FastVLMPreProcessorConfiguration: Codable, Sendable {
+/// Configuration for ``EdgeVLMProcessor``
+public struct EdgeVLMPreProcessorConfiguration: Codable, Sendable {
 
     public struct CropSize: Codable, Sendable {
         let width: Int
@@ -678,7 +678,7 @@ public struct FastVLMPreProcessorConfiguration: Codable, Sendable {
     }
 }
 
-public struct FastVLMProcessorConfiguration: Codable, Sendable {
+public struct EdgeVLMProcessorConfiguration: Codable, Sendable {
 
     public enum Strategy: Codable, Sendable {
         case `default`

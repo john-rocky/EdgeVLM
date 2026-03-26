@@ -1,4 +1,4 @@
-# FastVLM: Efficient Vision Encoding for Vision Language Models
+# EdgeVLM: Efficient Vision Encoding for Vision Language Models
 
 This is the official repository of
 **[FastVLM: Efficient Vision Encoding for Vision Language Models](https://www.arxiv.org/abs/2412.13303). (CVPR 2025)**
@@ -16,21 +16,21 @@ This is the official repository of
 
 <table>
 <tr>
-    <td><img src="docs/fastvlm-counting.gif" alt="FastVLM - Counting"></td>
-    <td><img src="docs/fastvlm-handwriting.gif" alt="FastVLM - Handwriting"></td>
-    <td><img src="docs/fastvlm-emoji.gif" alt="FastVLM - Emoji"></td>
+    <td><img src="docs/fastvlm-counting.gif" alt="EdgeVLM - Counting"></td>
+    <td><img src="docs/fastvlm-handwriting.gif" alt="EdgeVLM - Handwriting"></td>
+    <td><img src="docs/fastvlm-emoji.gif" alt="EdgeVLM - Emoji"></td>
 </tr>
 </table>
 
 ## Getting Started
-We use LLaVA codebase to train FastVLM variants. In order to train or finetune your own variants, 
+We use LLaVA codebase to train EdgeVLM variants. In order to train or finetune your own variants, 
 please follow instructions provided in [LLaVA](https://github.com/haotian-liu/LLaVA) codebase. 
 We provide instructions for running inference with our models.   
 
 ### Setup
 ```bash
-conda create -n fastvlm python=3.10
-conda activate fastvlm
+conda create -n edgevlm python=3.10
+conda activate edgevlm
 pip install -e .
 ```
 
@@ -39,12 +39,12 @@ For detailed information on various evaluations, please refer to our [paper](htt
 
 | Model        | Stage |                                            Pytorch Checkpoint (url)                                             |
 |:-------------|:-----:|:---------------------------------------------------------------------------------------------------------------:|
-| FastVLM-0.5B |   2   | [fastvlm_0.5b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage2.zip) |
-|              |   3   | [fastvlm_0.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage3.zip) |
-| FastVLM-1.5B |   2   | [fastvlm_1.5b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage2.zip) |
-|              |   3   | [fastvlm_1.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage3.zip)  |
-| FastVLM-7B   |   2   | [fastvlm_7b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage2.zip)  |
-|              |   3   | [fastvlm_7b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage3.zip)  |
+| EdgeVLM-0.5B |   2   | [edgevlm_0.5b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage2.zip) |
+|              |   3   | [edgevlm_0.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage3.zip) |
+| EdgeVLM-1.5B |   2   | [edgevlm_1.5b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage2.zip) |
+|              |   3   | [edgevlm_1.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage3.zip)  |
+| EdgeVLM-7B   |   2   | [edgevlm_7b_stage2](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage2.zip)  |
+|              |   3   | [edgevlm_7b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage3.zip)  |
 
 To download all the pretrained checkpoints run the command below (note that this might take some time depending on your connection so might be good to grab ☕️ while you wait).
 
@@ -65,9 +65,9 @@ To run inference on Apple Silicon, pytorch checkpoints have to be exported to fo
 suitable for running on Apple Silicon, detailed instructions and code can be found [`model_export`](model_export/) subfolder.
 Please see the README there for more details.
 
-For convenience, we provide 3 models that are in Apple Silicon compatible format: [fastvlm_0.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage3_llm.fp16.zip), 
-[fastvlm_1.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage3_llm.int8.zip), 
-[fastvlm_7b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage3_llm.int4.zip). 
+For convenience, we provide 3 models that are in Apple Silicon compatible format: [edgevlm_0.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_0.5b_stage3_llm.fp16.zip),
+[edgevlm_1.5b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_1.5b_stage3_llm.int8.zip),
+[edgevlm_7b_stage3](https://ml-site.cdn-apple.com/datasets/fastvlm/llava-fastvithd_7b_stage3_llm.int4.zip). 
 We encourage developers to export the model of their choice with the appropriate quantization levels following 
 the instructions in [`model_export`](model_export/).
 
