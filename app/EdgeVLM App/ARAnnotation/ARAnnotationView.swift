@@ -9,6 +9,9 @@
 
 import SwiftUI
 import MLXLMCommon
+#if os(iOS)
+import simd
+#endif
 
 struct ARAnnotationView: View {
     var model: EdgeVLMModel

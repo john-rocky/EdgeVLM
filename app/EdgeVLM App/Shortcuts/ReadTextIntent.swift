@@ -21,12 +21,12 @@ struct ReadTextIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        guard let imageData = image.data,
-              let ciImage = CIImage(data: imageData) else {
+        let imageData = image.data
+        guard let ciImage = CIImage(data: imageData) else {
             throw ReadTextError.invalidImage
         }
 
-        let model = EdgeVLMModel()
+        let model = await EdgeVLMModel()
         let userInput = UserInput(
             prompt: .text("Read all text visible in this image. Output only the text content."),
             images: [.ciImage(ciImage)]

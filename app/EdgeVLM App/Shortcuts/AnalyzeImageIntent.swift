@@ -24,13 +24,12 @@ struct AnalyzeImageIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        // Load image from IntentFile
-        guard let imageData = image.data,
-              let ciImage = CIImage(data: imageData) else {
+        let imageData = image.data
+        guard let ciImage = CIImage(data: imageData) else {
             throw AnalyzeImageError.invalidImage
         }
 
-        let model = EdgeVLMModel()
+        let model = await EdgeVLMModel()
         let userInput = UserInput(
             prompt: .text(prompt),
             images: [.ciImage(ciImage)]
