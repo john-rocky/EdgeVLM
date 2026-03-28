@@ -20,6 +20,10 @@ struct EdgeVLMApp: App {
                     .tabItem {
                         Label("Captioning", systemImage: "film")
                     }
+                VideoSeekView(model: model)
+                    .tabItem {
+                        Label("Seek", systemImage: "film.circle")
+                    }
             }
         }
     }
