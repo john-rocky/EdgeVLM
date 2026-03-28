@@ -16,17 +16,45 @@ struct EdgeVLMApp: App {
                     .tabItem {
                         Label("Camera", systemImage: "camera.fill")
                     }
+                ConversationView(model: model)
+                    .tabItem {
+                        Label("Chat", systemImage: "bubble.left.and.bubble.right")
+                    }
+                DetectionView(model: model)
+                    .tabItem {
+                        Label("Detect", systemImage: "viewfinder")
+                    }
+                TranslationView(model: model)
+                    .tabItem {
+                        Label("Translate", systemImage: "character.book.closed")
+                    }
+                NarrationView(model: model)
+                    .tabItem {
+                        Label("Narrate", systemImage: "speaker.wave.2")
+                    }
                 VideoCaptionView(model: model)
                     .tabItem {
-                        Label("Captioning", systemImage: "film")
+                        Label("Caption", systemImage: "film")
                     }
                 VideoSeekView(model: model)
                     .tabItem {
                         Label("Seek", systemImage: "film.circle")
                     }
-                DetectionView(model: model)
+                ScreenAnalysisView(model: model)
                     .tabItem {
-                        Label("Detect", systemImage: "viewfinder")
+                        Label("Screen", systemImage: "rectangle.dashed")
+                    }
+                ImageCompareView(model: model)
+                    .tabItem {
+                        Label("Compare", systemImage: "square.split.2x1")
+                    }
+                DataExtractView(model: model)
+                    .tabItem {
+                        Label("Extract", systemImage: "doc.text.magnifyingglass")
+                    }
+                ARAnnotationView(model: model)
+                    .tabItem {
+                        Label("AR", systemImage: "arkit")
                     }
             }
         }
