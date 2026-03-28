@@ -17,7 +17,7 @@ let FRAME_DELAY = Duration.milliseconds(1)
 
 struct ContentView: View {
     @State private var camera = CameraController()
-    @State private var model = EdgeVLMModel()
+    var model: EdgeVLMModel
 
     /// stream of frames -> VideoFrameView, see distributeVideoFrames
     @State private var framesToDisplay: AsyncStream<CVImageBuffer>?
@@ -449,5 +449,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(model: EdgeVLMModel())
 }

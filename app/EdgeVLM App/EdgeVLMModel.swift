@@ -187,4 +187,23 @@ class EdgeVLMModel {
         output = ""
         promptTime = ""
     }
+
+    /// Generate a caption for a single frame and return the text.
+    /// Does not modify the live UI state (output, evaluationState).
+    public func generateCaption(_ userInput: UserInput) async throws -> String {
+        let modelContainer = try await _load()
+        MLXRandom.seed(UInt64(Date.timeIntervalSinceReferenceDate * 1000))
+
+        let result = try await modelContainer.perform { context in
+            let input = try await context.processor.prepare(input: userInput)
+            return try MLXLMCommon.generate(
+                input: input, parameters: generateParameters, context: context
+            ) { tokens in
+                if Task.isCancelled { return .stop }
+                if tokens.count >= maxTokens { return .stop }
+                return .more
+            }
+        }
+        return result.output
+    }
 }

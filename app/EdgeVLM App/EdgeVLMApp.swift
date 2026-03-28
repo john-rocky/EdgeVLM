@@ -7,9 +7,20 @@ import SwiftUI
 
 @main
 struct EdgeVLMApp: App {
+    @State private var model = EdgeVLMModel()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabView {
+                ContentView(model: model)
+                    .tabItem {
+                        Label("Camera", systemImage: "camera.fill")
+                    }
+                VideoCaptionView(model: model)
+                    .tabItem {
+                        Label("Captioning", systemImage: "film")
+                    }
+            }
         }
     }
 }
