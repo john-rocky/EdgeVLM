@@ -16,6 +16,9 @@ struct VideoSeekView: View {
 
     @State private var engine = VideoIndexEngine()
     @State private var searchQuery = ""
+    @State private var searchResults: [IndexEntry] = []
+    @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>?
     @State private var videoURL: URL?
     @State private var videoFileName: String?
 
@@ -24,13 +27,6 @@ struct VideoSeekView: View {
 
     // Photos picker
     @State private var selectedPhotoItem: PhotosPickerItem?
-
-    var searchResults: [IndexEntry] {
-        if searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return engine.videoIndex.entries
-        }
-        return engine.videoIndex.search(query: searchQuery)
-    }
 
     var body: some View {
         NavigationStack {
@@ -72,6 +68,35 @@ struct VideoSeekView: View {
             }
             .task {
                 await model.load()
+            }
+            .onChange(of: searchQuery) { _, newValue in
+                performSearch(newValue)
+            }
+        }
+    }
+
+    // MARK: - Search
+
+    private func performSearch(_ query: String) {
+        searchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.isEmpty {
+            searchResults = engine.videoIndex.entries
+            isSearching = false
+            return
+        }
+
+        // Show instant keyword results first
+        searchResults = engine.videoIndex.search(query: trimmed)
+        isSearching = true
+
+        // Then expand with Foundation Models for broader matching
+        searchTask = Task {
+            let expanded = await engine.videoIndex.semanticSearch(query: trimmed)
+            if !Task.isCancelled {
+                searchResults = expanded
+                isSearching = false
             }
         }
     }
@@ -175,7 +200,15 @@ struct VideoSeekView: View {
                         .textFieldStyle(.plain)
                 }
 
-                if !engine.statusMessage.isEmpty {
+                if isSearching {
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Expanding search...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if !engine.statusMessage.isEmpty {
                     Text(engine.statusMessage)
                         .font(.caption)
                         .foregroundStyle(.secondary)
