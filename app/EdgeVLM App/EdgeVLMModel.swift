@@ -187,4 +187,25 @@ class EdgeVLMModel {
         output = ""
         promptTime = ""
     }
+
+    /// Generate a caption for the given input and return the full text.
+    ///
+    /// Unlike `generate(_:)`, this method does not stream tokens to the UI.
+    /// It simply returns the completed output string, making it suitable
+    /// for batch processing (e.g., indexing video frames).
+    public func generateCaption(_ userInput: UserInput) async throws -> String {
+        let modelContainer = try await _load()
+        MLXRandom.seed(UInt64(Date.timeIntervalSinceReferenceDate * 1000))
+        let result = try await modelContainer.perform { context in
+            let input = try await context.processor.prepare(input: userInput)
+            return try MLXLMCommon.generate(
+                input: input, parameters: generateParameters, context: context
+            ) { tokens in
+                if Task.isCancelled { return .stop }
+                if tokens.count >= maxTokens { return .stop }
+                return .more
+            }
+        }
+        return result.output
+    }
 }
