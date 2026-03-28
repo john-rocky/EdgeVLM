@@ -24,6 +24,10 @@ struct EdgeVLMApp: App {
                     .tabItem {
                         Label("Seek", systemImage: "film.circle")
                     }
+                DetectionView(model: model)
+                    .tabItem {
+                        Label("Detect", systemImage: "viewfinder")
+                    }
             }
         }
     }
