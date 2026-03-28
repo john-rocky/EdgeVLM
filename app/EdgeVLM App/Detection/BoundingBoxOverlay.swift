@@ -12,37 +12,45 @@ struct BoundingBoxOverlay: View {
     var body: some View {
         GeometryReader { geometry in
             ForEach(objects) { object in
-                let rect = CGRect(
-                    x: object.boundingBox.minX * geometry.size.width,
-                    y: object.boundingBox.minY * geometry.size.height,
-                    width: object.boundingBox.width * geometry.size.width,
-                    height: object.boundingBox.height * geometry.size.height
-                )
-
-                // Bounding box rectangle
-                Rectangle()
-                    .stroke(object.color, lineWidth: 2)
-                    .frame(width: rect.width, height: rect.height)
-                    .position(x: rect.midX, y: rect.midY)
-
-                // Label above the box
-                Text(object.name)
-                    .font(.caption2)
-                    .bold()
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
-                    .background(object.color.opacity(0.7))
-                    .foregroundStyle(.white)
-                    .cornerRadius(4)
-                    .position(
-                        x: min(
-                            max(rect.minX + 30, 30),
-                            geometry.size.width - 30
-                        ),
-                        y: max(rect.minY - 10, 10)
-                    )
+                ObjectBoxView(object: object, containerSize: geometry.size)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: objects.map(\.id))
+    }
+}
+
+/// Renders a single bounding box with label for one detected object.
+private struct ObjectBoxView: View {
+    let object: DetectedObject
+    let containerSize: CGSize
+
+    var scaledRect: CGRect {
+        CGRect(
+            x: object.boundingBox.minX * containerSize.width,
+            y: object.boundingBox.minY * containerSize.height,
+            width: object.boundingBox.width * containerSize.width,
+            height: object.boundingBox.height * containerSize.height
+        )
+    }
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .stroke(object.color, lineWidth: 2)
+                .frame(width: scaledRect.width, height: scaledRect.height)
+                .position(x: scaledRect.midX, y: scaledRect.midY)
+
+            Text(object.name)
+                .font(.caption2)
+                .bold()
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .background(object.color.opacity(0.7))
+                .foregroundStyle(.white)
+                .cornerRadius(4)
+                .position(
+                    x: min(max(scaledRect.minX + 30, 30), containerSize.width - 30),
+                    y: max(scaledRect.minY - 10, 10)
+                )
+        }
     }
 }

@@ -3,6 +3,7 @@
 // Copyright (C) 2025 Apple Inc. All Rights Reserved.
 //
 
+import Foundation
 import SwiftUI
 
 /// Parses VLM output text into structured detection results.
@@ -20,19 +21,25 @@ enum DetectionParser {
     /// They are normalized to 0-1 range in the returned `DetectedObject` values.
     /// Malformed entries are silently skipped.
     static func parse(_ output: String) -> [DetectedObject] {
-        let pattern = /\[([^\]]+)\]\((\d+),(\d+),(\d+),(\d+)\)/
+        guard let regex = try? NSRegularExpression(
+            pattern: #"\[([^\]]+)\]\((\d+),(\d+),(\d+),(\d+)\)"#
+        ) else { return [] }
+
+        let nsOutput = output as NSString
+        let range = NSRange(location: 0, length: nsOutput.length)
+        let results = regex.matches(in: output, range: range)
         var objects: [DetectedObject] = []
 
-        for match in output.matches(of: pattern) {
-            let name = String(match.1)
+        for match in results {
+            guard match.numberOfRanges == 6 else { continue }
+            let name = nsOutput.substring(with: match.range(at: 1))
             guard
-                let x1 = Double(match.2),
-                let y1 = Double(match.3),
-                let x2 = Double(match.4),
-                let y2 = Double(match.5)
+                let x1 = Double(nsOutput.substring(with: match.range(at: 2))),
+                let y1 = Double(nsOutput.substring(with: match.range(at: 3))),
+                let x2 = Double(nsOutput.substring(with: match.range(at: 4))),
+                let y2 = Double(nsOutput.substring(with: match.range(at: 5)))
             else { continue }
 
-            // Validate coordinate ranges
             guard x1 >= 0, y1 >= 0, x2 >= 0, y2 >= 0,
                   x1 <= 100, y1 <= 100, x2 <= 100, y2 <= 100,
                   x2 > x1, y2 > y1
