@@ -129,16 +129,27 @@ struct DetectionView: View {
                     }
                 }
 
-                // Raw VLM output
+                // Raw VLM output + debug info
                 if !rawOutput.isEmpty {
                     Section {
                         ScrollView {
-                            Text(rawOutput)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(rawOutput)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                                Text("Parsed: \(detectedObjects.count) objects")
+                                    .font(.caption2)
+                                    .foregroundStyle(.orange)
+                                ForEach(detectedObjects) { obj in
+                                    Text("\(obj.name): (\(String(format: "%.2f", obj.boundingBox.minX)), \(String(format: "%.2f", obj.boundingBox.minY)), \(String(format: "%.2f", obj.boundingBox.maxX)), \(String(format: "%.2f", obj.boundingBox.maxY)))")
+                                        .font(.caption2)
+                                        .monospaced()
+                                        .foregroundStyle(.orange)
+                                }
+                            }
                         }
-                        .frame(minHeight: 40, maxHeight: 120)
+                        .frame(minHeight: 40, maxHeight: 200)
                     } header: {
                         Text("Raw Output")
                             #if os(macOS)

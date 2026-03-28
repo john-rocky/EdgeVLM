@@ -17,12 +17,12 @@ enum DetectionParser {
 
     /// Parse VLM output containing `[object_name](x1,y1,x2,y2)` entries.
     ///
-    /// Coordinates in the VLM output are percentages (0-100) of image dimensions.
-    /// They are normalized to 0-1 range in the returned `DetectedObject` values.
-    /// Malformed entries are silently skipped.
+    /// Handles variations: optional spaces around commas, integer or decimal coords.
+    /// Coordinates are auto-detected as 0-100 or 0-1000 scale and normalized to 0-1.
     static func parse(_ output: String) -> [DetectedObject] {
+        // Flexible: allow spaces around commas, decimal numbers
         guard let regex = try? NSRegularExpression(
-            pattern: #"\[([^\]]+)\]\((\d+),(\d+),(\d+),(\d+)\)"#
+            pattern: #"\[([^\]]+)\]\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)"#
         ) else { return [] }
 
         let nsOutput = output as NSString
@@ -40,16 +40,32 @@ enum DetectionParser {
                 let y2 = Double(nsOutput.substring(with: match.range(at: 5)))
             else { continue }
 
-            guard x1 >= 0, y1 >= 0, x2 >= 0, y2 >= 0,
-                  x1 <= 100, y1 <= 100, x2 <= 100, y2 <= 100,
-                  x2 > x1, y2 > y1
+            // Determine coordinate scale (0-1, 0-100, or 0-1000)
+            let maxCoord = max(x1, y1, x2, y2)
+            let divisor: Double
+            if maxCoord <= 1.0 {
+                divisor = 1.0
+            } else if maxCoord <= 100.0 {
+                divisor = 100.0
+            } else {
+                divisor = 1000.0
+            }
+
+            let nx1 = x1 / divisor
+            let ny1 = y1 / divisor
+            let nx2 = x2 / divisor
+            let ny2 = y2 / divisor
+
+            guard nx1 >= 0, ny1 >= 0, nx2 >= 0, ny2 >= 0,
+                  nx1 <= 1, ny1 <= 1, nx2 <= 1, ny2 <= 1,
+                  nx2 > nx1, ny2 > ny1
             else { continue }
 
             let rect = CGRect(
-                x: x1 / 100.0,
-                y: y1 / 100.0,
-                width: (x2 - x1) / 100.0,
-                height: (y2 - y1) / 100.0
+                x: nx1,
+                y: ny1,
+                width: nx2 - nx1,
+                height: ny2 - ny1
             )
 
             let color = palette[objects.count % palette.count]
