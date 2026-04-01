@@ -250,12 +250,28 @@ struct DetectionView: View {
             images: [.ciImage(CIImage(cvPixelBuffer: frame))]
         )
 
+        // Compute aspect-fill crop adjustment
+        let imageWidth = CGFloat(CVPixelBufferGetWidth(frame))
+        let imageHeight = CGFloat(CVPixelBufferGetHeight(frame))
+        let imageAspect = imageWidth / imageHeight
+        let viewAspect: CGFloat = 4.0 / 3.0
+
         Task {
             do {
                 let output = try await model.generateCaption(userInput)
                 await MainActor.run {
                     rawOutput = output
-                    detectedObjects = DetectionParser.parse(output)
+                    detectedObjects = DetectionParser.parse(output).map { obj in
+                        DetectedObject(
+                            name: obj.name,
+                            boundingBox: Self.adjustForAspectFill(
+                                obj.boundingBox,
+                                imageAspect: imageAspect,
+                                viewAspect: viewAspect
+                            ),
+                            color: obj.color
+                        )
+                    }
                     isDetecting = false
                 }
             } catch {
@@ -265,6 +281,33 @@ struct DetectionView: View {
                 }
             }
         }
+    }
+
+    /// Adjust normalized bounding box from image space to view space,
+    /// accounting for resizeAspectFill cropping.
+    static func adjustForAspectFill(
+        _ box: CGRect, imageAspect: CGFloat, viewAspect: CGFloat
+    ) -> CGRect {
+        if imageAspect < viewAspect {
+            let visibleFraction = imageAspect / viewAspect
+            let offset = (1 - visibleFraction) / 2
+            return CGRect(
+                x: box.minX,
+                y: (box.minY - offset) / visibleFraction,
+                width: box.width,
+                height: box.height / visibleFraction
+            )
+        } else if imageAspect > viewAspect {
+            let visibleFraction = viewAspect / imageAspect
+            let offset = (1 - visibleFraction) / 2
+            return CGRect(
+                x: (box.minX - offset) / visibleFraction,
+                y: box.minY,
+                width: box.width / visibleFraction,
+                height: box.height
+            )
+        }
+        return box
     }
 
     /// Clear all detection results and resume camera feed.

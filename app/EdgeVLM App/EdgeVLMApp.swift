@@ -24,6 +24,10 @@ struct EdgeVLMApp: App {
                     .tabItem {
                         Label("Detect", systemImage: "viewfinder")
                     }
+                SmartSegmentView(model: model)
+                    .tabItem {
+                        Label("Segment", systemImage: "wand.and.stars")
+                    }
                 TranslationView(model: model)
                     .tabItem {
                         Label("Translate", systemImage: "character.book.closed")
