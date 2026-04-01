@@ -50,7 +50,6 @@ struct ImageCompareView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
             Form {
                 imageSelectionSection
                 promptSection
@@ -80,7 +79,6 @@ struct ImageCompareView: View {
                     }
                 }
             }
-        }
     }
 
     // MARK: - Image Selection Section

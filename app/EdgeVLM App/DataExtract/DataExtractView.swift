@@ -38,7 +38,6 @@ struct DataExtractView: View {
     @State private var copiedToClipboard = false
 
     var body: some View {
-        NavigationStack {
             Form {
                 imageSourceSection
                 extractionSettingsSection
@@ -80,7 +79,6 @@ struct DataExtractView: View {
             .task {
                 await model.load()
             }
-        }
     }
 
     // MARK: - Image Source Section
@@ -466,7 +464,7 @@ struct CameraCaptureSheet: View {
                             camera.stop()
                         }
                     )
-                    .aspectRatio(4 / 3, contentMode: .fit)
+                    .aspectRatio(4.0 / 3.0, contentMode: .fit)
                 } else {
                     ProgressView("Starting camera...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)

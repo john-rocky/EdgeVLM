@@ -25,7 +25,6 @@ struct TranslationView: View {
     @State private var selectedLanguage: LanguageOption = .english
 
     var body: some View {
-        NavigationStack {
             Form {
                 // Camera feed with translation overlay
                 Section {
@@ -61,7 +60,7 @@ struct TranslationView: View {
                                     .allowsHitTesting(false)
                                 }
                             }
-                            .aspectRatio(4 / 3, contentMode: .fit)
+                            .aspectRatio(4.0 / 3.0, contentMode: .fit)
                             #if os(macOS)
                                 .frame(maxWidth: 750)
                                 .frame(maxWidth: .infinity)
@@ -179,7 +178,6 @@ struct TranslationView: View {
                     }
                 }
             }
-        }
     }
 
     // MARK: - Translation Overlay

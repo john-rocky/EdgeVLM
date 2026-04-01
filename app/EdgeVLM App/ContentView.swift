@@ -37,12 +37,12 @@ struct ContentView: View {
         #endif
         return placement
     }
-    
-    var statusTextColor : Color {
+
+    var statusTextColor: Color {
         return model.evaluationState == .processingPrompt ? .black : .white
     }
-    
-    var statusBackgroundColor : Color {
+
+    var statusBackgroundColor: Color {
         switch model.evaluationState {
         case .idle:
             return .gray
@@ -54,309 +54,251 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 10.0) {
-                        Picker("Camera Type", selection: $selectedCameraType) {
-                            ForEach(CameraType.allCases, id: \.self) { cameraType in
-                                Text(cameraType.rawValue.capitalized).tag(cameraType)
-                            }
-                        }
-                        // Prevent macOS from adding a text label for the picker
-                        .labelsHidden()
-                        .pickerStyle(.segmented)
-                        .onChange(of: selectedCameraType) { _, _ in
-                            // Cancel any in-flight requests when switching modes
-                            model.cancel()
-                        }
+        VStack(spacing: 0) {
+            // Camera type picker
+            Picker("Camera Type", selection: $selectedCameraType) {
+                ForEach(CameraType.allCases, id: \.self) { cameraType in
+                    Text(cameraType.rawValue.capitalized).tag(cameraType)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .onChange(of: selectedCameraType) { _, _ in
+                model.cancel()
+            }
 
-                        if let framesToDisplay {
-                            VideoFrameView(
-                                frames: framesToDisplay,
-                                cameraType: selectedCameraType,
-                                action: { frame in
-                                    processSingleFrame(frame)
-                                })
-                                // Because we're using the AVCaptureSession preset
-                                // `.vga640x480`, we can assume this aspect ratio
-                                .aspectRatio(4/3, contentMode: .fit)
-                                #if os(macOS)
-                                .frame(maxWidth: 750)
-                                #endif
-                                .overlay(alignment: .top) {
-                                    if !model.promptTime.isEmpty {
-                                        Text("TTFT \(model.promptTime)")
-                                            .font(.caption)
-                                            .foregroundStyle(.white)
-                                            .monospaced()
-                                            .padding(.vertical, 4.0)
-                                            .padding(.horizontal, 6.0)
-                                            .background(alignment: .center) {
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color.black.opacity(0.6))
-                                            }
-                                            .padding(.top)
-                                    }
+            // Camera feed
+            if let framesToDisplay {
+                VideoFrameView(
+                    frames: framesToDisplay,
+                    cameraType: selectedCameraType,
+                    action: { frame in
+                        processSingleFrame(frame)
+                    })
+                    .aspectRatio(4.0/3.0, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(alignment: .top) {
+                        if !model.promptTime.isEmpty {
+                            Text("TTFT \(model.promptTime)")
+                                .font(.caption)
+                                .foregroundStyle(.white)
+                                .monospaced()
+                                .padding(.vertical, 4.0)
+                                .padding(.horizontal, 6.0)
+                                .background(alignment: .center) {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.black.opacity(0.6))
                                 }
-                                #if !os(macOS)
-                                .overlay(alignment: .topTrailing) {
-                                    CameraControlsView(
-                                        backCamera: $camera.backCamera,
-                                        device: $camera.device,
-                                        devices: $camera.devices)
-                                    .padding()
-                                }
-                                #endif
-                                .overlay(alignment: .bottom) {
-                                    if selectedCameraType == .continuous {
-                                        Group {
-                                            if model.evaluationState == .processingPrompt {
-                                                HStack {
-                                                    ProgressView()
-                                                        .tint(self.statusTextColor)
-                                                        .controlSize(.small)
-
-                                                    Text(model.evaluationState.rawValue)
-                                                }
-                                            } else if model.evaluationState == .idle {
-                                                HStack(spacing: 6.0) {
-                                                    Image(systemName: "clock.fill")
-                                                        .font(.caption)
-
-                                                    Text(model.evaluationState.rawValue)
-                                                }
-                                            }
-                                            else {
-                                                // I'm manually tweaking the spacing to
-                                                // better match the spacing with ProgressView
-                                                HStack(spacing: 6.0) {
-                                                    Image(systemName: "lightbulb.fill")
-                                                        .font(.caption)
-
-                                                    Text(model.evaluationState.rawValue)
-                                                }
-                                            }
-                                        }
-                                        .foregroundStyle(self.statusTextColor)
-                                        .font(.caption)
-                                        .bold()
-                                        .padding(.vertical, 6.0)
-                                        .padding(.horizontal, 8.0)
-                                        .background(self.statusBackgroundColor)
-                                        .clipShape(.capsule)
-                                        .padding(.bottom)
-                                    }
-                                }
-                                #if os(macOS)
-                                .frame(maxWidth: .infinity)
-                                .frame(minWidth: 500)
-                                .frame(minHeight: 375)
-                                #endif
+                                .padding(.top)
                         }
                     }
-                }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-
-                promptSections
-
-                Section {
-                    if model.output.isEmpty && model.running {
-                        ProgressView()
-                            .controlSize(.large)
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        ScrollView {
-                            Text(model.output)
-                                .foregroundStyle(isEditingPrompt ? .secondary : .primary)
-                                .textSelection(.enabled)
-                                #if os(macOS)
-                                .font(.headline)
-                                .fontWeight(.regular)
-                                #endif
-                        }
-                        .frame(minHeight: 50.0, maxHeight: 200.0)
+                    #if !os(macOS)
+                    .overlay(alignment: .topTrailing) {
+                        CameraControlsView(
+                            backCamera: $camera.backCamera,
+                            device: $camera.device,
+                            devices: $camera.devices)
+                        .padding()
                     }
-                } header: {
-                    Text("Response")
-                        #if os(macOS)
-                        .font(.headline)
-                        .padding(.bottom, 2.0)
-                        #endif
+                    #endif
+                    .overlay(alignment: .bottom) {
+                        if selectedCameraType == .continuous {
+                            statusBadge
+                        }
+                    }
+                    .padding(.horizontal)
+                    #if os(macOS)
+                    .frame(maxWidth: 750)
+                    .frame(maxWidth: .infinity)
+                    .frame(minWidth: 500)
+                    .frame(minHeight: 375)
+                    #endif
+            }
+
+            Spacer(minLength: 0)
+
+            // Bottom panel: prompt + response
+            responsePanel
+        }
+        .task {
+            camera.start()
+        }
+        .task {
+            await model.load()
+        }
+
+        #if !os(macOS)
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+        #endif
+
+        .task {
+            if Task.isCancelled {
+                return
+            }
+
+            await distributeVideoFrames()
+        }
+
+        .navigationTitle("Camera")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            ToolbarItem(placement: toolbarItemPlacement) {
+                Button {
+                    isShowingInfo.toggle()
                 }
-
-                #if os(macOS)
-                Spacer()
-                #endif
-            }
-            
-            #if os(iOS)
-            .listSectionSpacing(0)
-            #elseif os(macOS)
-            .padding()
-            #endif
-            .task {
-                camera.start()
-            }
-            .task {
-                await model.load()
-            }
-
-            #if !os(macOS)
-            .onAppear {
-                // Prevent the screen from dimming or sleeping due to inactivity
-                UIApplication.shared.isIdleTimerDisabled = true
-            }
-            .onDisappear {
-                // Resumes normal idle timer behavior
-                UIApplication.shared.isIdleTimerDisabled = false
-            }
-            #endif
-
-            // task to distribute video frames -- this will cancel
-            // and restart when the view is on/off screen.  note: it is
-            // important that this is here (attached to the VideoFrameView)
-            // rather than the outer view because this has the correct lifecycle
-            .task {
-                if Task.isCancelled {
-                    return
+                label: {
+                    Image(systemName: "info.circle")
                 }
-
-                await distributeVideoFrames()
             }
 
-            .navigationTitle("EdgeVLM")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: toolbarItemPlacement) {
+            ToolbarItem(placement: .primaryAction) {
+                if isEditingPrompt {
                     Button {
-                        isShowingInfo.toggle()
+                        isEditingPrompt.toggle()
                     }
                     label: {
-                        Image(systemName: "info.circle")
+                        Text("Done")
+                            .fontWeight(.bold)
                     }
                 }
-
-                ToolbarItem(placement: .primaryAction) {
-                    if isEditingPrompt {
-                        Button {
+                else {
+                    Menu {
+                        Button("Describe image") {
+                            prompt = "Describe the image in English."
+                            promptSuffix = "Output should be brief, about 15 words or less."
+                        }
+                        Button("Facial expression") {
+                            prompt = "What is this person's facial expression?"
+                            promptSuffix = "Output only one or two words."
+                        }
+                        Button("Read text") {
+                            prompt = "What is written in this image?"
+                            promptSuffix = "Output only the text in the image."
+                        }
+                        #if !os(macOS)
+                        Button("Customize...") {
                             isEditingPrompt.toggle()
                         }
-                        label: {
-                            Text("Done")
-                                .fontWeight(.bold)
-                        }
-                    }
-                    else {
-                        Menu {
-                            Button("Describe image") {
-                                prompt = "Describe the image in English."
-                                promptSuffix = "Output should be brief, about 15 words or less."
-                            }
-                            Button("Facial expression") {
-                                prompt = "What is this person's facial expression?"
-                                promptSuffix = "Output only one or two words."
-                            }
-                            Button("Read text") {
-                                prompt = "What is written in this image?"
-                                promptSuffix = "Output only the text in the image."
-                            }
-                            #if !os(macOS)
-                            Button("Customize...") {
-                                isEditingPrompt.toggle()
-                            }
-                            #endif
-                        } label: { Text("Prompts") }
-                    }
-                }
-            }
-            .sheet(isPresented: $isShowingInfo) {
-                InfoView()
-            }
-        }
-    }
-
-    var promptSummary: some View {
-        Section("Prompt") {
-            VStack(alignment: .leading, spacing: 4.0) {
-                let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmedPrompt.isEmpty {
-                    Text(trimmedPrompt)
-                        .foregroundStyle(.secondary)
-                }
-
-                let trimmedSuffix = promptSuffix.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmedSuffix.isEmpty {
-                    Text(trimmedSuffix)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        #endif
+                    } label: { Text("Prompts") }
                 }
             }
         }
+        .sheet(isPresented: $isShowingInfo) {
+            InfoView()
+        }
     }
 
-    var promptForm: some View {
+    // MARK: - Status Badge
+
+    private var statusBadge: some View {
         Group {
-            #if os(iOS)
-            Section("Prompt") {
-                TextEditor(text: $prompt)
-                    .frame(minHeight: 38)
+            if model.evaluationState == .processingPrompt {
+                HStack {
+                    ProgressView()
+                        .tint(statusTextColor)
+                        .controlSize(.small)
+                    Text(model.evaluationState.rawValue)
+                }
+            } else if model.evaluationState == .idle {
+                HStack(spacing: 6.0) {
+                    Image(systemName: "clock.fill")
+                        .font(.caption)
+                    Text(model.evaluationState.rawValue)
+                }
+            } else {
+                HStack(spacing: 6.0) {
+                    Image(systemName: "lightbulb.fill")
+                        .font(.caption)
+                    Text(model.evaluationState.rawValue)
+                }
             }
+        }
+        .foregroundStyle(statusTextColor)
+        .font(.caption)
+        .bold()
+        .padding(.vertical, 6.0)
+        .padding(.horizontal, 8.0)
+        .background(statusBackgroundColor)
+        .clipShape(.capsule)
+        .padding(.bottom)
+    }
 
-            Section("Prompt Suffix") {
-                TextEditor(text: $promptSuffix)
-                    .frame(minHeight: 38)
-            }
-            #elseif os(macOS)
-            Section {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text("Prompt")
-                            .font(.headline)
+    // MARK: - Response Panel
 
+    private var responsePanel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if isEditingPrompt {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Prompt")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                    #if os(iOS)
+                    TextField("Prompt", text: $prompt, axis: .vertical)
+                        .lineLimit(2...4)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.subheadline)
+                    TextField("Suffix", text: $promptSuffix, axis: .vertical)
+                        .lineLimit(1...2)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.caption)
+                    #elseif os(macOS)
+                    HStack(alignment: .top, spacing: 8) {
                         TextEditor(text: $prompt)
                             .frame(height: 38)
-                            .padding(.horizontal, 8.0)
-                            .padding(.vertical, 10.0)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
                             .background(Color(.textBackgroundColor))
-                            .cornerRadius(10.0)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text("Prompt Suffix")
-                            .font(.headline)
-
+                            .cornerRadius(8)
                         TextEditor(text: $promptSuffix)
                             .frame(height: 38)
-                            .padding(.horizontal, 8.0)
-                            .padding(.vertical, 10.0)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
                             .background(Color(.textBackgroundColor))
-                            .cornerRadius(10.0)
+                            .cornerRadius(8)
                     }
+                    #endif
                 }
+            } else {
+                Text(prompt)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
-            .padding(.vertical)
-            #endif
-        }
-    }
 
-    var promptSections: some View {
-        Group {
-            #if os(iOS)
-            if isEditingPrompt {
-                promptForm
+            if model.output.isEmpty && model.running {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            } else if !model.output.isEmpty {
+                Divider()
+                ScrollView {
+                    Text(model.output)
+                        .foregroundStyle(isEditingPrompt ? .secondary : .primary)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        #if os(macOS)
+                        .font(.headline)
+                        .fontWeight(.regular)
+                        #endif
+                }
+                .frame(maxHeight: 120)
             }
-            else {
-                promptSummary
-            }
-            #elseif os(macOS)
-            promptForm
-            #endif
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
     }
 
     func analyzeVideoFrames(_ frames: AsyncStream<CVImageBuffer>) async {
@@ -365,7 +307,7 @@ struct ContentView: View {
                 prompt: .text("\(prompt) \(promptSuffix)"),
                 images: [.ciImage(CIImage(cvPixelBuffer: frame))]
             )
-            
+
             // generate output for a frame and wait for generation to complete
             let t = await model.generate(userInput)
             _ = await t.result

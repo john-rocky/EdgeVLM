@@ -32,180 +32,171 @@ struct DetectionView: View {
         """
 
     var body: some View {
-        NavigationStack {
-            Form {
-                // Camera + overlay section
-                Section {
-                    VStack(alignment: .leading, spacing: 10.0) {
-                        if let framesToDisplay {
-                            ZStack {
-                                VideoFrameView(
-                                    frames: framesToDisplay,
-                                    cameraType: .single,
-                                    action: { frame in
-                                        captureAndDetect(frame)
-                                    }
-                                )
-
-                                // Bounding box overlay
-                                if !detectedObjects.isEmpty {
-                                    BoundingBoxOverlay(objects: detectedObjects)
-                                        .allowsHitTesting(false)
-                                }
-
-                                // Detection progress indicator
-                                if isDetecting {
-                                    VStack {
-                                        Spacer()
-                                        HStack {
-                                            ProgressView()
-                                                .tint(.white)
-                                                .controlSize(.small)
-                                            Text("Detecting...")
-                                                .font(.caption)
-                                                .bold()
-                                                .foregroundStyle(.white)
-                                        }
-                                        .padding(.vertical, 6)
-                                        .padding(.horizontal, 10)
-                                        .background(Color.black.opacity(0.6))
-                                        .clipShape(Capsule())
-                                        .padding(.bottom)
-                                    }
-                                }
-                            }
-                            .aspectRatio(4 / 3, contentMode: .fit)
-                            #if os(macOS)
-                            .frame(maxWidth: 750)
-                            .frame(maxWidth: .infinity)
-                            .frame(minWidth: 500)
-                            .frame(minHeight: 375)
-                            #endif
+        VStack(spacing: 0) {
+            // Camera + overlay
+            if let framesToDisplay {
+                ZStack {
+                    VideoFrameView(
+                        frames: framesToDisplay,
+                        cameraType: .single,
+                        action: { frame in
+                            captureAndDetect(frame)
                         }
-                    }
-                }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+                    )
 
-                // Detected objects list
-                if !detectedObjects.isEmpty {
-                    Section {
-                        ForEach(detectedObjects) { object in
-                            HStack {
-                                Circle()
-                                    .fill(object.color)
-                                    .frame(width: 12, height: 12)
-                                Text(object.name)
-                                    .font(.body)
-                                Spacer()
-                                Text(
-                                    String(
-                                        format: "(%.0f,%.0f)-(%.0f,%.0f)",
-                                        object.boundingBox.minX * 100,
-                                        object.boundingBox.minY * 100,
-                                        object.boundingBox.maxX * 100,
-                                        object.boundingBox.maxY * 100
-                                    )
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .monospaced()
-                            }
-                        }
-                    } header: {
-                        HStack {
-                            Text("Detected Objects (\(detectedObjects.count))")
-                            Spacer()
-                            Button("Clear") {
-                                clearDetections()
-                            }
-                            .font(.caption)
-                        }
-                        #if os(macOS)
-                        .font(.headline)
-                        .padding(.bottom, 2.0)
-                        #endif
-                    }
-                }
-
-                // Raw VLM output + debug info
-                if !rawOutput.isEmpty {
-                    Section {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(rawOutput)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .textSelection(.enabled)
-                                Text("Parsed: \(detectedObjects.count) objects")
-                                    .font(.caption2)
-                                    .foregroundStyle(.orange)
-                                ForEach(detectedObjects) { obj in
-                                    Text("\(obj.name): (\(String(format: "%.2f", obj.boundingBox.minX)), \(String(format: "%.2f", obj.boundingBox.minY)), \(String(format: "%.2f", obj.boundingBox.maxX)), \(String(format: "%.2f", obj.boundingBox.maxY)))")
-                                        .font(.caption2)
-                                        .monospaced()
-                                        .foregroundStyle(.orange)
-                                }
-                            }
-                        }
-                        .frame(minHeight: 40, maxHeight: 200)
-                    } header: {
-                        Text("Raw Output")
-                            #if os(macOS)
-                            .font(.headline)
-                            .padding(.bottom, 2.0)
-                            #endif
-                    }
-                }
-
-                #if os(macOS)
-                Spacer()
-                #endif
-            }
-
-            #if os(iOS)
-            .listSectionSpacing(0)
-            #elseif os(macOS)
-            .padding()
-            #endif
-            .task {
-                camera.start()
-            }
-            .task {
-                await model.load()
-            }
-
-            #if !os(macOS)
-            .onAppear {
-                UIApplication.shared.isIdleTimerDisabled = true
-            }
-            .onDisappear {
-                UIApplication.shared.isIdleTimerDisabled = false
-            }
-            #endif
-
-            .task {
-                if Task.isCancelled { return }
-                await distributeVideoFrames()
-            }
-
-            .navigationTitle("Detect")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                    // Bounding box overlay
                     if !detectedObjects.isEmpty {
-                        Button {
-                            clearDetections()
-                        } label: {
-                            Image(systemName: "trash")
+                        BoundingBoxOverlay(objects: detectedObjects)
+                            .allowsHitTesting(false)
+                    }
+
+                    // Detection progress indicator
+                    if isDetecting {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                ProgressView()
+                                    .tint(.white)
+                                    .controlSize(.small)
+                                Text("Detecting...")
+                                    .font(.caption)
+                                    .bold()
+                                    .foregroundStyle(.white)
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(Color.black.opacity(0.6))
+                            .clipShape(Capsule())
+                            .padding(.bottom)
                         }
+                    }
+                }
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+                #if os(macOS)
+                .frame(maxWidth: 750)
+                .frame(maxWidth: .infinity)
+                .frame(minWidth: 500)
+                .frame(minHeight: 375)
+                #endif
+            } else {
+                ProgressView()
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+            }
+
+            Spacer(minLength: 0)
+
+            // Results panel (fixed at bottom)
+            resultsPanel
+                .frame(maxHeight: 250)
+        }
+        .task {
+            camera.start()
+        }
+        .task {
+            await model.load()
+        }
+
+        #if !os(macOS)
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+        #endif
+
+        .task {
+            if Task.isCancelled { return }
+            await distributeVideoFrames()
+        }
+
+        .navigationTitle("Detect")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if !detectedObjects.isEmpty {
+                    Button {
+                        clearDetections()
+                    } label: {
+                        Image(systemName: "trash")
                     }
                 }
             }
         }
+    }
+
+    // MARK: - Results Panel
+
+    private var resultsPanel: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                // Detected objects list
+                if !detectedObjects.isEmpty {
+                    HStack {
+                        Text("Detected Objects (\(detectedObjects.count))")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Button("Clear") {
+                            clearDetections()
+                        }
+                        .font(.caption)
+                    }
+                    .padding(.horizontal)
+
+                    ForEach(detectedObjects) { object in
+                        HStack {
+                            Circle()
+                                .fill(object.color)
+                                .frame(width: 12, height: 12)
+                            Text(object.name)
+                                .font(.body)
+                            Spacer()
+                            Text(
+                                String(
+                                    format: "(%.0f,%.0f)-(%.0f,%.0f)",
+                                    object.boundingBox.minX * 100,
+                                    object.boundingBox.minY * 100,
+                                    object.boundingBox.maxX * 100,
+                                    object.boundingBox.maxY * 100
+                                )
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospaced()
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+
+                // Raw VLM output
+                if !rawOutput.isEmpty {
+                    Text("Raw Output")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(rawOutput)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                        Text("Parsed: \(detectedObjects.count) objects")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .padding(.vertical, 12)
+        }
+        .background(.ultraThinMaterial)
     }
 
     // MARK: - Frame Distribution

@@ -20,7 +20,6 @@ struct ARAnnotationView: View {
 
     var body: some View {
         #if os(iOS)
-        NavigationStack {
             ZStack {
                 ARViewContainer(
                     annotations: $annotations,
@@ -61,7 +60,6 @@ struct ARAnnotationView: View {
             }
             .navigationTitle("AR Annotate")
             .navigationBarTitleDisplayMode(.inline)
-        }
         #else
         // macOS fallback — ARKit is not available
         VStack {
@@ -71,6 +69,7 @@ struct ARAnnotationView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationTitle("AR Annotate")
         #endif
     }
 

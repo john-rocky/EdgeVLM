@@ -25,7 +25,6 @@ struct ScreenAnalysisView: View {
     ]
 
     var body: some View {
-        NavigationStack {
             Form {
                 // Image import section
                 Section {
@@ -237,7 +236,6 @@ struct ScreenAnalysisView: View {
                     }
                 }
             }
-        }
     }
 
     // MARK: - Clipboard Paste

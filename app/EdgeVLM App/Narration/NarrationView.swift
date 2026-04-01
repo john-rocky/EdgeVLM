@@ -31,7 +31,6 @@ struct NarrationView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
             VStack(spacing: 0) {
                 // Camera feed
                 cameraSection
@@ -70,7 +69,6 @@ struct NarrationView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
-        }
     }
 
     // MARK: - Camera Section
@@ -83,7 +81,7 @@ struct NarrationView: View {
                     cameraType: .continuous,
                     action: nil
                 )
-                .aspectRatio(4 / 3, contentMode: .fit)
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
                 #if os(macOS)
                 .frame(maxWidth: 750)
                 #endif

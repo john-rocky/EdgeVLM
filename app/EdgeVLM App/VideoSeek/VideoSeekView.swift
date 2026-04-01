@@ -29,7 +29,6 @@ struct VideoSeekView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
-        NavigationStack {
             Form {
                 // Video import section
                 importSection
@@ -72,7 +71,6 @@ struct VideoSeekView: View {
             .onChange(of: searchQuery) { _, newValue in
                 performSearch(newValue)
             }
-        }
     }
 
     // MARK: - Search

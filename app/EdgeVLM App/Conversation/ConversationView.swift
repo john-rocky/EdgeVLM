@@ -31,7 +31,6 @@ struct ConversationView: View {
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
-        NavigationStack {
             VStack(spacing: 0) {
                 if engine.capturedImage != nil {
                     // Image captured: show chat interface
@@ -74,7 +73,6 @@ struct ConversationView: View {
                     }
                 }
             }
-        }
     }
 
     // MARK: - Camera Feed
@@ -91,7 +89,7 @@ struct ConversationView: View {
                         captureFrame(frame)
                     }
                 )
-                .aspectRatio(4 / 3, contentMode: .fit)
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
                 #if os(macOS)
                 .frame(maxWidth: 750)
                 .frame(maxWidth: .infinity)

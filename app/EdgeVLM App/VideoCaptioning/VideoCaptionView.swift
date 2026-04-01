@@ -25,7 +25,6 @@ struct VideoCaptionView: View {
     @State private var videoThumbnail: CGImage?
 
     var body: some View {
-        NavigationStack {
             Form {
                 videoImportSection
                 if videoAsset != nil {
@@ -64,7 +63,6 @@ struct VideoCaptionView: View {
             .task {
                 await model.load()
             }
-        }
     }
 
     // MARK: - Sections
