@@ -8,3 +8,8 @@ build/
 # EdgeVLM models
 app/EdgeVLM/model
 *.backup
+
+# YOLO-World / CLIP models (hosted as release assets)
+*.mlpackage
+*.mlmodelc
+app/clip_vocab.json

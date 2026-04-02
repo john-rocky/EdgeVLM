@@ -64,6 +64,23 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7374A6282F7E4DCA00B3C420 /* Exceptions for "EdgeVLM" folder in "Video" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				model/clip_text_encoder.mlpackage,
+				model/yoloworld_detector.mlpackage,
+			);
+			target = C35372AD2D08C32D00474D34 /* Video */;
+		};
+		7374A62B2F7E50AC00B3C420 /* Exceptions for "EdgeVLM" folder in "EdgeVLM App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				model/clip_text_encoder.mlpackage,
+				model/clip_vocab.json,
+				model/yoloworld_detector.mlpackage,
+			);
+			target = 019A3E092D78E6A00055F93B /* EdgeVLM App */;
+		};
 		C35372B92D08C32D00474D34 /* Exceptions for "Video" folder in "Video" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
@@ -72,6 +89,16 @@
 			target = C35372AD2D08C32D00474D34 /* Video */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		7374A6292F7E4DCA00B3C420 /* Exceptions for "EdgeVLM" folder in "Compile Sources" phase from "Video" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = C35372AA2D08C32D00474D34 /* Sources */;
+			membershipExceptions = (
+				model/clip_vocab.json,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		019A3E0B2D78E6A00055F93B /* EdgeVLM App */ = {
@@ -94,6 +121,11 @@
 		};
 		C39BB3E72D79082A005DB8FB /* EdgeVLM */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7374A6282F7E4DCA00B3C420 /* Exceptions for "EdgeVLM" folder in "Video" target */,
+				7374A6292F7E4DCA00B3C420 /* Exceptions for "EdgeVLM" folder in "Compile Sources" phase from "Video" target */,
+				7374A62B2F7E50AC00B3C420 /* Exceptions for "EdgeVLM" folder in "EdgeVLM App" target */,
+			);
 			path = EdgeVLM;
 			sourceTree = "<group>";
 		};

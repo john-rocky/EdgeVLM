@@ -81,7 +81,7 @@ struct NarrationView: View {
                     cameraType: .continuous,
                     action: nil
                 )
-                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .aspectRatio(9.0 / 16.0, contentMode: .fit)
                 #if os(macOS)
                 .frame(maxWidth: 750)
                 #endif

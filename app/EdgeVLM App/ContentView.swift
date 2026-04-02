@@ -77,7 +77,7 @@ struct ContentView: View {
                     action: { frame in
                         processSingleFrame(frame)
                     })
-                    .aspectRatio(4.0/3.0, contentMode: .fit)
+                    .aspectRatio(9.0/16.0, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(alignment: .top) {
                         if !model.promptTime.isEmpty {

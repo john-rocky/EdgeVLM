@@ -9,7 +9,7 @@ import MLXLMCommon
 import SwiftUI
 import Video
 
-/// View that captures a camera frame and runs VLM detection + Vision segmentation,
+/// View that captures a camera frame and runs YOLO-World detection + Vision segmentation,
 /// displaying segmentation masks and bounding boxes on the camera feed.
 struct SmartSegmentView: View {
     var model: EdgeVLMModel
@@ -20,8 +20,7 @@ struct SmartSegmentView: View {
     @State private var isRunning = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Camera + overlay
+        ZStack(alignment: .bottom) {
             if let framesToDisplay {
                 ZStack {
                     VideoFrameView(
@@ -43,9 +42,8 @@ struct SmartSegmentView: View {
                         pipelineProgressOverlay
                     }
                 }
-                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .aspectRatio(9.0 / 16.0, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
                 #if os(macOS)
                 .frame(maxWidth: 750)
                 .frame(maxWidth: .infinity)
@@ -55,15 +53,14 @@ struct SmartSegmentView: View {
             } else {
                 ProgressView()
                     .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 200)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            Spacer(minLength: 0)
-
-            // Results panel (fixed at bottom)
-            resultsPanel
-                .frame(maxHeight: 250)
+            // Results panel (overlays at bottom)
+            if engine.result != nil || engine.errorMessage != nil {
+                resultsPanel
+                    .frame(maxHeight: 250)
+            }
         }
         .task {
             camera.start()
@@ -108,7 +105,6 @@ struct SmartSegmentView: View {
     private var resultsPanel: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                // Error message
                 if let error = engine.errorMessage {
                     Text(error)
                         .font(.caption)
@@ -116,7 +112,6 @@ struct SmartSegmentView: View {
                         .padding(.horizontal)
                 }
 
-                // Segmented objects list
                 if let result = engine.result, !result.objects.isEmpty {
                     HStack {
                         Text("Segmented Objects (\(result.objects.count))")
@@ -152,9 +147,8 @@ struct SmartSegmentView: View {
                     }
                 }
 
-                // VLM Output
                 if let result = engine.result {
-                    Text("VLM Output")
+                    Text("Info")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .padding(.horizontal)
