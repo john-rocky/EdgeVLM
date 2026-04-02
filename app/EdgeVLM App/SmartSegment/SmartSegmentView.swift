@@ -122,15 +122,25 @@ struct SmartSegmentView: View {
                     }
                     .padding(.horizontal)
 
-                    // VLM output with colored keywords
-                    coloredVLMText(result.vlmDescription, objects: result.objects)
-                        .font(.body)
-                        .padding(.horizontal)
+                    // Colored tags flow
+                    FlowLayout(spacing: 8) {
+                        ForEach(result.objects) { object in
+                            Text(object.label)
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(object.color.opacity(0.85))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             }
             .padding(.vertical, 10)
         }
-        .background(.ultraThinMaterial)
+        .background(.clear)
     }
 
     // MARK: - Pipeline Progress Overlay
