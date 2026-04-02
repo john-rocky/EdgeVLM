@@ -99,16 +99,31 @@ class SmartSegmentEngine {
                 return
             }
 
-            // Stage 3: Per-box Vision segmentation
+            // Stage 3: Per-box Vision segmentation → single combined mask
             stage = .segmentingObjects
 
             let imageWidth = cgImage.width
             let imageHeight = cgImage.height
 
+            // Single canvas for all masks (~8MB total instead of 8MB × N)
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            let canvasCtx = CGContext(
+                data: nil,
+                width: imageWidth,
+                height: imageHeight,
+                bitsPerComponent: 8,
+                bytesPerRow: imageWidth * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+            let canvasPtr = canvasCtx?.data?.assumingMemoryBound(to: UInt8.self)
+            if let canvasPtr {
+                memset(canvasPtr, 0, imageWidth * imageHeight * 4)
+            }
+
             var objects: [SegmentedObject] = []
             for (i, detection) in detections.enumerated() {
                 let box = detection.box
-                // Pixel box → clamp to image bounds
                 let x0 = Int(max(0, box.x0))
                 let y0 = Int(max(0, box.y0))
                 let x1 = Int(min(Float(imageWidth), box.x1))
@@ -117,24 +132,21 @@ class SmartSegmentEngine {
                 let cropH = y1 - y0
                 guard cropW > 0, cropH > 0 else { continue }
 
-                // Crop image to box region
                 let cropRect = CGRect(x: x0, y: y0, width: cropW, height: cropH)
                 guard let croppedCG = cgImage.cropping(to: cropRect) else { continue }
 
-                // Run Vision foreground segmentation on the cropped region
-                let cropMask = try? segmentForeground(on: croppedCG)
-
-                // Build full-image mask by placing crop mask at the box position
                 let color = Self.palette[i % Self.palette.count]
-                let fullMask = cropMask.flatMap {
-                    colorizeMaskAtPosition(
-                        $0, color: color,
+
+                // Run Vision segmentation on crop and paint directly onto canvas
+                if let cropMask = try? segmentForeground(on: croppedCG), let canvasPtr {
+                    paintMaskOnCanvas(
+                        cropMask, color: color,
                         cropOrigin: (x0, y0),
+                        canvasPtr: canvasPtr,
                         imageWidth: imageWidth, imageHeight: imageHeight
                     )
                 }
 
-                // Normalized box for overlay
                 let normalizedBox = CGRect(
                     x: CGFloat(box.x0) / CGFloat(imageWidth),
                     y: CGFloat(box.y0) / CGFloat(imageHeight),
@@ -145,9 +157,22 @@ class SmartSegmentEngine {
                 objects.append(SegmentedObject(
                     label: detection.label,
                     boundingBox: normalizedBox,
-                    maskImage: fullMask,
+                    maskImage: nil,
                     color: color
                 ))
+            }
+
+            // Create single combined mask image
+            let combinedMask = canvasCtx?.makeImage()
+
+            // Set the combined mask on the first object (overlay renders all masks)
+            if !objects.isEmpty, let combinedMask {
+                objects[0] = SegmentedObject(
+                    label: objects[0].label,
+                    boundingBox: objects[0].boundingBox,
+                    maskImage: combinedMask,
+                    color: objects[0].color
+                )
             }
 
             self.result = SmartSegmentResult(
@@ -191,21 +216,22 @@ class SmartSegmentEngine {
         )
     }
 
-    /// Colorize a crop-sized Float32 mask and place it at the correct position in a full-image RGBA CGImage.
-    private func colorizeMaskAtPosition(
+    /// Paint a crop-sized Float32 mask directly onto a shared full-image canvas.
+    private func paintMaskOnCanvas(
         _ buffer: CVPixelBuffer,
         color: Color,
         cropOrigin: (x: Int, y: Int),
+        canvasPtr: UnsafeMutablePointer<UInt8>,
         imageWidth: Int,
         imageHeight: Int
-    ) -> CGImage? {
+    ) {
         CVPixelBufferLockBaseAddress(buffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
 
         let maskW = CVPixelBufferGetWidth(buffer)
         let maskH = CVPixelBufferGetHeight(buffer)
         let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
-        guard let base = CVPixelBufferGetBaseAddress(buffer) else { return nil }
+        guard let base = CVPixelBufferGetBaseAddress(buffer) else { return }
         let maskPtr = base.assumingMemoryBound(to: Float32.self)
         let floatsPerRow = bytesPerRow / MemoryLayout<Float32>.stride
 
@@ -219,43 +245,23 @@ class SmartSegmentEngine {
         let cr = UInt8(r * 255)
         let cg = UInt8(g * 255)
         let cb = UInt8(b * 255)
+        let alpha: UInt8 = 128
 
-        // Full-image canvas (transparent)
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        guard let ctx = CGContext(
-            data: nil,
-            width: imageWidth,
-            height: imageHeight,
-            bitsPerComponent: 8,
-            bytesPerRow: imageWidth * 4,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return nil }
-
-        guard let outPtr = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
-        // Zero-fill (transparent)
-        memset(outPtr, 0, imageWidth * imageHeight * 4)
-
-        // Paint mask pixels at the crop's position in the full image
         for my in 0..<maskH {
             let imgY = cropOrigin.y + my
             guard imgY >= 0 && imgY < imageHeight else { continue }
             for mx in 0..<maskW {
                 let imgX = cropOrigin.x + mx
                 guard imgX >= 0 && imgX < imageWidth else { continue }
-                let maskVal = maskPtr[my * floatsPerRow + mx]
-                if maskVal > 0.5 {
+                if maskPtr[my * floatsPerRow + mx] > 0.5 {
                     let offset = (imgY * imageWidth + imgX) * 4
-                    let alpha: UInt8 = 128
-                    outPtr[offset + 0] = UInt8(UInt16(cr) * UInt16(alpha) / 255)
-                    outPtr[offset + 1] = UInt8(UInt16(cg) * UInt16(alpha) / 255)
-                    outPtr[offset + 2] = UInt8(UInt16(cb) * UInt16(alpha) / 255)
-                    outPtr[offset + 3] = alpha
+                    canvasPtr[offset + 0] = UInt8(UInt16(cr) * UInt16(alpha) / 255)
+                    canvasPtr[offset + 1] = UInt8(UInt16(cg) * UInt16(alpha) / 255)
+                    canvasPtr[offset + 2] = UInt8(UInt16(cb) * UInt16(alpha) / 255)
+                    canvasPtr[offset + 3] = alpha
                 }
             }
         }
-
-        return ctx.makeImage()
     }
 
     // MARK: - Clear
