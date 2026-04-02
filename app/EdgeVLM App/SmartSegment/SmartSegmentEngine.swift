@@ -152,7 +152,7 @@ class SmartSegmentEngine {
 
             self.result = SmartSegmentResult(
                 objects: objects,
-                vlmDescription: "Objects: \(queries.joined(separator: ", "))\nDetections: \(detections.count)"
+                vlmDescription: vlmOutput
             )
             stage = .complete
 

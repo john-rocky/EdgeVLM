@@ -122,20 +122,10 @@ struct SmartSegmentView: View {
                     }
                     .padding(.horizontal)
 
-                    // Colored tags flow
-                    FlowLayout(spacing: 8) {
-                        ForEach(result.objects) { object in
-                            Text(object.label)
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(object.color.opacity(0.85))
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.horizontal)
+                    // VLM output with colored keywords
+                    coloredVLMText(result.vlmDescription, objects: result.objects)
+                        .font(.body)
+                        .padding(.horizontal)
                 }
             }
             .padding(.vertical, 10)
@@ -206,6 +196,43 @@ struct SmartSegmentView: View {
             self.camera.detatch()
         }
         displayContinuation.finish()
+    }
+    // MARK: - Colored VLM Text
+
+    /// Build an AttributedString from VLM output, coloring detected object names.
+    private func coloredVLMText(_ text: String, objects: [SegmentedObject]) -> Text {
+        // Build a map of label → color
+        var labelColors: [(String, Color)] = []
+        for obj in objects {
+            labelColors.append((obj.label.lowercased(), obj.color))
+        }
+        // Sort by length descending so longer labels match first
+        labelColors.sort { $0.0.count > $1.0.count }
+
+        // Walk through the text and build colored Text
+        let lower = text.lowercased()
+        var result = Text("")
+        var i = lower.startIndex
+
+        while i < lower.endIndex {
+            var matched = false
+            for (label, color) in labelColors {
+                if lower[i...].hasPrefix(label) {
+                    let end = text.index(i, offsetBy: label.count)
+                    let word = String(text[i..<end])
+                    result = result + Text(word).bold().foregroundColor(color)
+                    i = end
+                    matched = true
+                    break
+                }
+            }
+            if !matched {
+                result = result + Text(String(text[i]))
+                i = text.index(after: i)
+            }
+        }
+
+        return result
     }
 }
 
