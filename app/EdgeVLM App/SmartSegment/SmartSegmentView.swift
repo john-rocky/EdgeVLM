@@ -104,7 +104,7 @@ struct SmartSegmentView: View {
 
     private var resultsPanel: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 if let error = engine.errorMessage {
                     Text(error)
                         .font(.caption)
@@ -114,9 +114,6 @@ struct SmartSegmentView: View {
 
                 if let result = engine.result, !result.objects.isEmpty {
                     HStack {
-                        Text("Segmented Objects (\(result.objects.count))")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
                         Spacer()
                         Button("Clear") {
                             clearResults()
@@ -125,42 +122,23 @@ struct SmartSegmentView: View {
                     }
                     .padding(.horizontal)
 
-                    ForEach(result.objects) { object in
-                        HStack {
-                            Circle()
-                                .fill(object.color)
-                                .frame(width: 12, height: 12)
+                    // Colored tags flow
+                    FlowLayout(spacing: 8) {
+                        ForEach(result.objects) { object in
                             Text(object.label)
-                                .font(.body)
-                            Spacer()
-                            if object.maskImage != nil {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                    .font(.caption)
-                            } else {
-                                Image(systemName: "xmark.circle")
-                                    .foregroundStyle(.secondary)
-                                    .font(.caption)
-                            }
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(object.color.opacity(0.85))
+                                .cornerRadius(8)
                         }
-                        .padding(.horizontal)
                     }
-                }
-
-                if let result = engine.result {
-                    Text("Info")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal)
-
-                    Text(result.vlmDescription)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
-                        .padding(.horizontal)
+                    .padding(.horizontal)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
         }
         .background(.ultraThinMaterial)
     }

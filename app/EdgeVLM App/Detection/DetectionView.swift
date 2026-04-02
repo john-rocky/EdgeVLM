@@ -87,34 +87,24 @@ struct DetectionView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
 
-                // Detected objects list
+                // Detected objects as colored tags
                 if !detectedObjects.isEmpty {
                     Section {
-                        ForEach(detectedObjects) { object in
-                            HStack {
-                                Circle()
-                                    .fill(object.color)
-                                    .frame(width: 12, height: 12)
+                        FlowLayout(spacing: 8) {
+                            ForEach(detectedObjects) { object in
                                 Text(object.name)
-                                    .font(.body)
-                                Spacer()
-                                Text(
-                                    String(
-                                        format: "(%.0f,%.0f)-(%.0f,%.0f)",
-                                        object.boundingBox.minX * 100,
-                                        object.boundingBox.minY * 100,
-                                        object.boundingBox.maxX * 100,
-                                        object.boundingBox.maxY * 100
-                                    )
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .monospaced()
+                                    .font(.subheadline)
+                                    .bold()
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(object.color.opacity(0.85))
+                                    .cornerRadius(8)
                             }
                         }
                     } header: {
                         HStack {
-                            Text("Detected Objects (\(detectedObjects.count))")
+                            Text("\(detectedObjects.count) objects")
                             Spacer()
                             Button("Clear") {
                                 clearDetections()
@@ -125,36 +115,6 @@ struct DetectionView: View {
                         .font(.headline)
                         .padding(.bottom, 2.0)
                         #endif
-                    }
-                }
-
-                // Raw VLM output + debug info
-                if !rawOutput.isEmpty {
-                    Section {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(rawOutput)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .textSelection(.enabled)
-                                Text("Parsed: \(detectedObjects.count) objects")
-                                    .font(.caption2)
-                                    .foregroundStyle(.orange)
-                                ForEach(detectedObjects) { obj in
-                                    Text("\(obj.name): (\(String(format: "%.2f", obj.boundingBox.minX)), \(String(format: "%.2f", obj.boundingBox.minY)), \(String(format: "%.2f", obj.boundingBox.maxX)), \(String(format: "%.2f", obj.boundingBox.maxY)))")
-                                        .font(.caption2)
-                                        .monospaced()
-                                        .foregroundStyle(.orange)
-                                }
-                            }
-                        }
-                        .frame(minHeight: 40, maxHeight: 200)
-                    } header: {
-                        Text("Raw Output")
-                            #if os(macOS)
-                            .font(.headline)
-                            .padding(.bottom, 2.0)
-                            #endif
                     }
                 }
 
