@@ -28,6 +28,10 @@ class TranslationEngine {
     /// The model is asked to read all text and translate it to the target language,
     /// returning both the original and translated text in one response.
     func translate(frame: CVImageBuffer, model: EdgeVLMModel) async {
+        await translate(ciImage: CIImage(cvPixelBuffer: frame), model: model)
+    }
+
+    func translate(ciImage: CIImage, model: EdgeVLMModel) async {
         guard !isTranslating else { return }
 
         isTranslating = true
@@ -41,7 +45,7 @@ class TranslationEngine {
 
         let userInput = UserInput(
             prompt: .text(prompt),
-            images: [.ciImage(CIImage(cvPixelBuffer: frame))]
+            images: [.ciImage(ciImage)]
         )
 
         do {

@@ -6,6 +6,7 @@
 import AVFoundation
 import CoreImage
 import MLXLMCommon
+import PhotosUI
 import SwiftUI
 import Video
 
@@ -25,6 +26,7 @@ struct TranslationView: View {
     @State private var selectedLanguage: LanguageOption = .english
     @State private var baseZoom: CGFloat = 1.0
     @State private var showZoomLevel = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
             Form {
@@ -233,6 +235,19 @@ struct TranslationView: View {
                         }
                     }
                 }
+                ToolbarItem(placement: toolbarPhotoPlacement) {
+                    PhotosPicker(
+                        selection: $selectedPhotoItem,
+                        matching: .images
+                    ) {
+                        Image(systemName: "photo.on.rectangle")
+                    }
+                }
+            }
+            .onChange(of: selectedPhotoItem) { _, newValue in
+                if let newValue {
+                    loadAndTranslatePhoto(newValue)
+                }
             }
     }
 
@@ -324,6 +339,34 @@ struct TranslationView: View {
     func clearResults() {
         engine.sourceText = ""
         engine.translatedText = ""
+    }
+
+    private var toolbarPhotoPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        .topBarLeading
+        #else
+        .navigation
+        #endif
+    }
+
+    /// Load a photo from the library and run translation on it.
+    func loadAndTranslatePhoto(_ item: PhotosPickerItem) {
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+            #if os(iOS)
+            guard let uiImage = UIImage(data: data),
+                  let cgImage = uiImage.cgImage else { return }
+            #elseif os(macOS)
+            guard let nsImage = NSImage(data: data),
+                  let tiffData = nsImage.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData),
+                  let cgImage = bitmap.cgImage else { return }
+            #endif
+            await MainActor.run {
+                selectedPhotoItem = nil
+            }
+            await engine.translate(ciImage: CIImage(cgImage: cgImage), model: model)
+        }
     }
 }
 

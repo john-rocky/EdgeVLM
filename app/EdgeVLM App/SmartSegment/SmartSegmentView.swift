@@ -6,6 +6,7 @@
 import AVFoundation
 import CoreImage
 import MLXLMCommon
+import PhotosUI
 import SwiftUI
 import Video
 
@@ -18,6 +19,7 @@ struct SmartSegmentView: View {
     @State private var framesToDisplay: AsyncStream<CVImageBuffer>?
     @State private var engine = SmartSegmentEngine()
     @State private var isRunning = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -96,6 +98,19 @@ struct SmartSegmentView: View {
                         Image(systemName: "trash")
                     }
                 }
+            }
+            ToolbarItem(placement: toolbarPhotoPlacement) {
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images
+                ) {
+                    Image(systemName: "photo.on.rectangle")
+                }
+            }
+        }
+        .onChange(of: selectedPhotoItem) { _, newValue in
+            if let newValue {
+                loadAndSegmentPhoto(newValue)
             }
         }
     }
@@ -208,6 +223,50 @@ struct SmartSegmentView: View {
         displayContinuation.finish()
     }
     // MARK: - Colored VLM Text
+
+    private var toolbarPhotoPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        .topBarLeading
+        #else
+        .navigation
+        #endif
+    }
+
+    /// Load a photo from the library and run segmentation on it.
+    func loadAndSegmentPhoto(_ item: PhotosPickerItem) {
+        guard !isRunning else { return }
+        isRunning = true
+        engine.clear()
+
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else {
+                await MainActor.run { isRunning = false }
+                return
+            }
+            #if os(iOS)
+            guard let uiImage = UIImage(data: data),
+                  let cgImage = uiImage.cgImage else {
+                await MainActor.run { isRunning = false }
+                return
+            }
+            #elseif os(macOS)
+            guard let nsImage = NSImage(data: data),
+                  let tiffData = nsImage.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData),
+                  let cgImage = bitmap.cgImage else {
+                await MainActor.run { isRunning = false }
+                return
+            }
+            #endif
+            await MainActor.run {
+                selectedPhotoItem = nil
+            }
+            await engine.run(ciImage: CIImage(cgImage: cgImage), model: model)
+            await MainActor.run {
+                isRunning = false
+            }
+        }
+    }
 
     /// Build an AttributedString from VLM output, coloring detected object names.
     private func coloredVLMText(_ text: String, objects: [SegmentedObject]) -> Text {

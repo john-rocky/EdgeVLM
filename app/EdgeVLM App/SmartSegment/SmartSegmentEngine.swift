@@ -56,13 +56,17 @@ class SmartSegmentEngine {
     // MARK: - Pipeline
 
     func run(frame: CVImageBuffer, model: EdgeVLMModel) async {
+        await run(ciImage: CIImage(cvPixelBuffer: frame), model: model)
+    }
+
+    func run(ciImage: CIImage, model: EdgeVLMModel) async {
         result = nil
         errorMessage = nil
         stage = .listingObjects
 
         do {
             // Stage 1: VLM lists objects (no coordinates)
-            let ciImage = CIImage(cvPixelBuffer: frame)
+            let ciImage = ciImage
             let userInput = UserInput(
                 prompt: .text(listingPrompt),
                 images: [.ciImage(ciImage)]

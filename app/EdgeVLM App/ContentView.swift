@@ -5,6 +5,7 @@
 
 import AVFoundation
 import MLXLMCommon
+import PhotosUI
 import SwiftUI
 import Video
 
@@ -29,6 +30,7 @@ struct ContentView: View {
 
     @State private var selectedCameraType: CameraType = .continuous
     @State private var isEditingPrompt: Bool = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var toolbarItemPlacement: ToolbarItemPlacement {
         var placement: ToolbarItemPlacement = .navigation
@@ -195,6 +197,21 @@ struct ContentView: View {
         }
         .sheet(isPresented: $isShowingInfo) {
             InfoView()
+        }
+        .toolbar {
+            ToolbarItem(placement: toolbarItemPlacement) {
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images
+                ) {
+                    Image(systemName: "photo.on.rectangle")
+                }
+            }
+        }
+        .onChange(of: selectedPhotoItem) { _, newValue in
+            if let newValue {
+                loadAndAnalyzePhoto(newValue)
+            }
         }
     }
 
@@ -380,6 +397,32 @@ struct ContentView: View {
 
         // Post request to EdgeVLM
         Task {
+            await model.generate(userInput)
+        }
+    }
+
+    /// Load a photo from the library and analyze it.
+    func loadAndAnalyzePhoto(_ item: PhotosPickerItem) {
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+            #if os(iOS)
+            guard let uiImage = UIImage(data: data),
+                  let cgImage = uiImage.cgImage else { return }
+            #elseif os(macOS)
+            guard let nsImage = NSImage(data: data),
+                  let tiffData = nsImage.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData),
+                  let cgImage = bitmap.cgImage else { return }
+            #endif
+            let ciImage = CIImage(cgImage: cgImage)
+            await MainActor.run {
+                selectedPhotoItem = nil
+                model.output = ""
+            }
+            let userInput = UserInput(
+                prompt: .text("\(prompt) \(promptSuffix)"),
+                images: [.ciImage(ciImage)]
+            )
             await model.generate(userInput)
         }
     }

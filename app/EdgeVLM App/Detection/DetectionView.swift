@@ -6,6 +6,7 @@
 import AVFoundation
 import CoreImage
 import MLXLMCommon
+import PhotosUI
 import SwiftUI
 import Video
 
@@ -17,6 +18,7 @@ struct DetectionView: View {
     @State private var camera = CameraController()
     @State private var framesToDisplay: AsyncStream<CVImageBuffer>?
     @State private var lastCapturedFrame: CVImageBuffer?
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     @State private var detectedObjects: [DetectedObject] = []
     @State private var rawOutput: String = ""
@@ -163,6 +165,19 @@ struct DetectionView: View {
                         }
                     }
                 }
+                ToolbarItem(placement: toolbarPhotoPlacement) {
+                    PhotosPicker(
+                        selection: $selectedPhotoItem,
+                        matching: .images
+                    ) {
+                        Image(systemName: "photo.on.rectangle")
+                    }
+                }
+            }
+            .onChange(of: selectedPhotoItem) { _, newValue in
+                if let newValue {
+                    loadAndDetectPhoto(newValue)
+                }
             }
     }
 
@@ -272,6 +287,71 @@ struct DetectionView: View {
     func clearDetections() {
         detectedObjects = []
         rawOutput = ""
+    }
+
+    private var toolbarPhotoPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        .topBarLeading
+        #else
+        .navigation
+        #endif
+    }
+
+    /// Load a photo from the library and run detection on it.
+    func loadAndDetectPhoto(_ item: PhotosPickerItem) {
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+            #if os(iOS)
+            guard let uiImage = UIImage(data: data),
+                  let cgImage = uiImage.cgImage else { return }
+            #elseif os(macOS)
+            guard let nsImage = NSImage(data: data),
+                  let tiffData = nsImage.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData),
+                  let cgImage = bitmap.cgImage else { return }
+            #endif
+            await MainActor.run {
+                selectedPhotoItem = nil
+                isDetecting = true
+                detectedObjects = []
+                rawOutput = ""
+            }
+
+            let ciImage = CIImage(cgImage: cgImage)
+            let imageWidth = CGFloat(cgImage.width)
+            let imageHeight = CGFloat(cgImage.height)
+            let imageAspect = imageWidth / imageHeight
+            let viewAspect: CGFloat = 4.0 / 3.0
+
+            let userInput = UserInput(
+                prompt: .text(detectionPrompt),
+                images: [.ciImage(ciImage)]
+            )
+
+            do {
+                let output = try await model.generateCaption(userInput)
+                await MainActor.run {
+                    rawOutput = output
+                    detectedObjects = DetectionParser.parse(output).map { obj in
+                        DetectedObject(
+                            name: obj.name,
+                            boundingBox: Self.adjustForAspectFill(
+                                obj.boundingBox,
+                                imageAspect: imageAspect,
+                                viewAspect: viewAspect
+                            ),
+                            color: obj.color
+                        )
+                    }
+                    isDetecting = false
+                }
+            } catch {
+                await MainActor.run {
+                    rawOutput = "Detection failed: \(error.localizedDescription)"
+                    isDetecting = false
+                }
+            }
+        }
     }
 }
 
