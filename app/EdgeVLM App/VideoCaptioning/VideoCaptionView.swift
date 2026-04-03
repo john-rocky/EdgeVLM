@@ -21,8 +21,20 @@ struct VideoCaptionView: View {
 
     @State private var showFileImporter = false
     @State private var selectedPhotoItem: PhotosPickerItem?
-    @State private var showExporter = false
     @State private var videoThumbnail: CGImage?
+
+    // Search
+    @State private var searchQuery = ""
+    @State private var searchResults: [CaptionEntry] = []
+    @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>?
+
+    private var displayedEntries: [CaptionEntry] {
+        if searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return engine.timeline.entries
+        }
+        return searchResults
+    }
 
     var body: some View {
             Form {
@@ -35,6 +47,7 @@ struct VideoCaptionView: View {
                     progressSection
                 }
                 if !engine.timeline.entries.isEmpty {
+                    searchSection
                     timelineSection
                     exportSection
                 }
@@ -44,7 +57,7 @@ struct VideoCaptionView: View {
             #elseif os(macOS)
             .padding()
             #endif
-            .navigationTitle("Video Captioning")
+            .navigationTitle("Video")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -60,9 +73,38 @@ struct VideoCaptionView: View {
                     loadVideoFromPhotos(newValue)
                 }
             }
+            .onChange(of: searchQuery) { _, newValue in
+                performSearch(newValue)
+            }
             .task {
                 await model.load()
             }
+    }
+
+    // MARK: - Search
+
+    private func performSearch(_ query: String) {
+        searchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.isEmpty {
+            searchResults = []
+            isSearching = false
+            return
+        }
+
+        // Instant keyword results
+        searchResults = engine.timeline.search(query: trimmed)
+        isSearching = true
+
+        // Expand with Foundation Models
+        searchTask = Task {
+            let expanded = await engine.timeline.semanticSearch(query: trimmed)
+            if !Task.isCancelled {
+                searchResults = expanded
+                isSearching = false
+            }
+        }
     }
 
     // MARK: - Sections
@@ -240,29 +282,94 @@ struct VideoCaptionView: View {
         }
     }
 
+    var searchSection: some View {
+        Section {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                TextField("Search captions...", text: $searchQuery)
+                    .textFieldStyle(.plain)
+
+                if !searchQuery.isEmpty {
+                    Button {
+                        searchQuery = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if isSearching {
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Expanding search...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("Search")
+                #if os(macOS)
+                .font(.headline)
+                .padding(.bottom, 2.0)
+                #endif
+        }
+    }
+
     var timelineSection: some View {
         Section {
-            ForEach(engine.timeline.entries) { entry in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(entry.displayTime)
-                        .font(.caption)
-                        .monospaced()
-                        .foregroundStyle(.blue)
-                    Text(entry.text)
-                        .font(.body)
-                        .textSelection(.enabled)
+            if displayedEntries.isEmpty {
+                Text("No matching frames found.")
+                    .foregroundStyle(.secondary)
+                    .italic()
+            } else {
+                ForEach(displayedEntries) { entry in
+                    NavigationLink(destination: CaptionDetailView(entry: entry)) {
+                        entryRow(entry)
+                    }
                 }
-                .padding(.vertical, 2)
             }
         } header: {
             HStack {
-                Text("Captions (\(engine.timeline.entries.count))")
+                Text("Captions")
                     #if os(macOS)
                     .font(.headline)
                     #endif
                 Spacer()
+                Text("\(displayedEntries.count) frames")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private func entryRow(_ entry: CaptionEntry) -> some View {
+        HStack(spacing: 12) {
+            if let thumbnail = entry.thumbnail {
+                Image(decorative: thumbnail, scale: 1.0)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 80, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entry.displayTime)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+                    .foregroundStyle(.blue)
+
+                Text(entry.text)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     var exportSection: some View {
@@ -296,6 +403,8 @@ struct VideoCaptionView: View {
 
     func startCaptioning() {
         guard let videoAsset else { return }
+        searchQuery = ""
+        searchResults = []
         engine.start(
             asset: videoAsset,
             interval: interval,
@@ -337,7 +446,6 @@ struct VideoCaptionView: View {
             if let duration = try? await asset.load(.duration) {
                 videoDuration = CMTimeGetSeconds(duration)
             }
-            // Generate thumbnail
             let generator = AVAssetImageGenerator(asset: asset)
             generator.appliesPreferredTrackTransform = true
             generator.maximumSize = CGSize(width: 320, height: 240)

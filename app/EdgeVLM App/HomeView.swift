@@ -9,7 +9,7 @@ import SwiftUI
 
 enum TaskDestination: CaseIterable, Hashable {
     case camera, chat, detect, segment, translate, narrate
-    case caption, seek, screen, compare, extract, ar
+    case video, screen, compare, extract, ar
 
     var name: String {
         switch self {
@@ -19,8 +19,7 @@ enum TaskDestination: CaseIterable, Hashable {
         case .segment: "Segment"
         case .translate: "Translate"
         case .narrate: "Narrate"
-        case .caption: "Caption"
-        case .seek: "Seek"
+        case .video: "Video"
         case .screen: "Screen"
         case .compare: "Compare"
         case .extract: "Extract"
@@ -36,8 +35,7 @@ enum TaskDestination: CaseIterable, Hashable {
         case .segment: "wand.and.stars"
         case .translate: "character.book.closed"
         case .narrate: "speaker.wave.2"
-        case .caption: "film"
-        case .seek: "film.circle"
+        case .video: "film"
         case .screen: "rectangle.dashed"
         case .compare: "square.split.2x1"
         case .extract: "doc.text.magnifyingglass"
@@ -53,8 +51,7 @@ enum TaskDestination: CaseIterable, Hashable {
         case .segment: "Smart segmentation"
         case .translate: "Real-time translation"
         case .narrate: "Audio narration"
-        case .caption: "Video frame captions"
-        case .seek: "Video search & index"
+        case .video: "Caption & search"
         case .screen: "Screenshot analysis"
         case .compare: "Image comparison"
         case .extract: "Data extraction"
@@ -70,8 +67,7 @@ enum TaskDestination: CaseIterable, Hashable {
         case .segment: .purple
         case .translate: .teal
         case .narrate: .cyan
-        case .caption: .red
-        case .seek: .pink
+        case .video: .red
         case .screen: .green
         case .compare: .mint
         case .extract: .yellow
@@ -100,7 +96,7 @@ struct HomeView: View {
         var result = [
             TaskSection(title: "Live Camera", tasks: [.camera, .detect, .segment, .translate, .narrate]),
             TaskSection(title: "Photo & Screen", tasks: [.chat, .screen, .compare, .extract]),
-            TaskSection(title: "Video", tasks: [.caption, .seek]),
+            TaskSection(title: "Video", tasks: [.video]),
         ]
         #if os(iOS)
         result.append(TaskSection(title: "Augmented Reality", tasks: [.ar]))
@@ -162,8 +158,7 @@ struct HomeView: View {
         case .segment: SmartSegmentView(model: model)
         case .translate: TranslationView(model: model)
         case .narrate: NarrationView(model: model)
-        case .caption: VideoCaptionView(model: model)
-        case .seek: VideoSeekView(model: model)
+        case .video: VideoCaptionView(model: model)
         case .screen: ScreenAnalysisView(model: model)
         case .compare: ImageCompareView(model: model)
         case .extract: DataExtractView(model: model)

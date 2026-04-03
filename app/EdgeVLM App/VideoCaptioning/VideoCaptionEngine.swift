@@ -40,12 +40,20 @@ class VideoCaptionEngine {
                 totalFrames = max(1, Int(ceil(totalSeconds / interval)))
 
                 let extractor = VideoFrameExtractor(asset: asset, interval: interval)
+                let context = CIContext()
 
                 for try await (time, ciImage) in extractor.extractFrames() {
                     if Task.isCancelled { break }
 
                     currentFrameImage = ciImage
                     let seconds = CMTimeGetSeconds(time)
+
+                    // Generate thumbnail CGImage
+                    let thumbSize = CGRect(origin: .zero, size: CGSize(width: 320, height: 240))
+                    let scale = min(thumbSize.width / ciImage.extent.width,
+                                    thumbSize.height / ciImage.extent.height)
+                    let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+                    let thumbnail = context.createCGImage(scaled, from: scaled.extent)
 
                     let userInput = UserInput(
                         prompt: .text(prompt),
@@ -57,7 +65,8 @@ class VideoCaptionEngine {
                     let entry = CaptionEntry(
                         startTime: seconds,
                         endTime: min(seconds + interval, totalSeconds),
-                        text: caption.trimmingCharacters(in: .whitespacesAndNewlines)
+                        text: caption.trimmingCharacters(in: .whitespacesAndNewlines),
+                        thumbnail: thumbnail
                     )
                     timeline.entries.append(entry)
                     processedFrames += 1
