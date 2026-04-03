@@ -1,56 +1,77 @@
-# EdgeVLM
+# iOS-VLM-Sampler
 
-Demonstrates the performance of **EdgeVLM** models for on-device, visual question answering.
-
-<table>
-<tr>
-    <td><img src="../docs/fastvlm-counting.gif" alt="EdgeVLM - Counting"></td>
-    <td><img src="../docs/fastvlm-handwriting.gif" alt="EdgeVLM - Handwriting"></td>
-    <td><img src="../docs/fastvlm-emoji.gif" alt="EdgeVLM - Emoji"></td>
-</tr>
-</table>
+A sample iOS/macOS app showcasing various on-device Vision-Language Model (VLM) use cases powered by [EdgeVLM (FastVLM)](https://www.arxiv.org/abs/2412.13303). All inference runs privately on-device using Apple Silicon.
 
 ## Features
 
-- EdgeVLM runs on iOS (18.2+) and macOS (15.2+).
-- View Time-To-First-Token (TTFT) with every inference.
-- All predictions are processed privately and securely using on-device models.
+| Feature | Description | Platform |
+|:--------|:------------|:---------|
+| **Camera** | Live camera feed with real-time image captioning | iOS / macOS |
+| **Chat** | Multi-turn conversation with images | iOS / macOS |
+| **Detect** | Object detection with bounding box overlay | iOS / macOS |
+| **Segment** | Smart segmentation — identify and mask objects in a scene | iOS / macOS |
+| **Translate** | Real-time translation of captured text | iOS / macOS |
+| **Narrate** | Audio narration of what the camera sees | iOS / macOS |
+| **Video** | Video captioning with timeline and frame-level search | iOS / macOS |
+| **Screen** | Screenshot analysis | iOS / macOS |
+| **Compare** | Side-by-side image comparison | iOS / macOS |
+| **Extract** | Structured data extraction from images | iOS / macOS |
+| **AR Annotate** | Tap objects in AR to place floating labels in 3D space | iOS only |
 
-### Flexible Prompting
+## Requirements
 
-<img src="../docs/fastvlm-flexible_prompts.png" alt="Flexible prompting" style="width:66%;">
+- iOS 18.2+ / macOS 15.2+
+- Xcode 16+
 
-The app includes a set of built-in prompts to help you get started quickly. Tap the **Prompts** button in the top-right corner to explore them. Selecting a prompt will immediately update the active input. To create new prompts or edit existing ones, choose **Customize…** from the **Prompts** menu.
+## Getting Started
 
-## Pretrained Model Options
-
-There are 3 pretrained sizes of EdgeVLM to choose from:
-
-- **EdgeVLM 0.5B**: Small and fast - great for mobile devices where speed matters.
-- **EdgeVLM 1.5B**: Well balanced - great for larger devices where speed and accuracy matters.
-- **EdgeVLM 7B**: Fast and accurate - ideal for situations where accuracy matters over speed.
-
-To download any EdgeVLM listed above, use the [get_pretrained_mlx_model.sh](get_pretrained_mlx_model.sh) script. The script downloads the model from the web and places it in the appropriate location. Once a model has been downloaded using the steps below, no additional steps are needed to build the app in Xcode.
-
-To explore how the other models work for your use-case, simply re-run the `get_pretrained_mlx_model.sh` with the new model selected, follow the prompts, and rebuild your app in Xcode.
-
-### Download Instructions
-
-1. Make the script executable
+### 1. Download a pretrained model
 
 ```shell
 chmod +x app/get_pretrained_mlx_model.sh
-```
-
-2. Download EdgeVLM
-
-```shell
 app/get_pretrained_mlx_model.sh --model 0.5b --dest app/EdgeVLM/model
 ```
 
-3. Open the app in Xcode, Build, and Run.
+Available sizes:
 
-### Custom Model
+| Model | Notes |
+|:------|:------|
+| **0.5B** | Small and fast — ideal for iPhone |
+| **1.5B** | Balanced speed and accuracy |
+| **7B** | Best accuracy — suited for iPad / Mac |
 
-In addition to pretrained sizes of EdgeVLM, you can further quantize or fine-tune EdgeVLM to best fit their needs. To learn more, check out our documentation on how to [`export the model`](../model_export#export-vlm).
-Please clear existing model in `app/EdgeVLM/model` before downloading or copying a new model. 
+### 2. Build and run
+
+Open `app/EdgeVLM.xcodeproj` in Xcode, then build and run on a device.
+
+### Custom models
+
+You can quantize or fine-tune EdgeVLM to fit your needs. See [`model_export`](../model_export/) for details. Clear `app/EdgeVLM/model` before downloading or copying a new model.
+
+## Architecture
+
+The app is built with SwiftUI and uses [MLX Swift](https://github.com/ml-explore/mlx-swift) for on-device LLM inference and CoreML for the vision encoder.
+
+```
+EdgeVLM App/
+├── HomeView.swift              # Main navigation grid
+├── EdgeVLMModel.swift          # Shared model wrapper
+├── ContentView.swift           # Live camera captioning
+├── Conversation/               # Multi-turn chat
+├── Detection/                  # Object detection + bounding boxes
+├── SmartSegment/               # VLM-driven segmentation
+├── Translation/                # Real-time translation
+├── Narration/                  # Audio narration
+├── VideoCaptioning/            # Video caption + timeline
+├── VideoSeek/                  # Frame-level search in video
+├── ScreenAnalysis/             # Screenshot analysis
+├── ImageCompare/               # Image comparison
+├── DataExtract/                # Structured data extraction
+├── ARAnnotation/               # AR annotation (iOS)
+├── YOLOWorld/                  # Grounding / text-based detection
+└── Shortcuts/                  # Siri Shortcuts integration
+```
+
+## License
+
+See [LICENSE](../LICENSE) and [LICENSE_MODEL](../LICENSE_MODEL).
