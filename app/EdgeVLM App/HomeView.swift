@@ -94,7 +94,7 @@ struct HomeView: View {
 
     private var sections: [TaskSection] {
         var result = [
-            TaskSection(title: "Live Camera", tasks: [.camera, .detect, .segment, .translate, .narrate]),
+            TaskSection(title: "Live Camera", tasks: [.camera, /* .detect, */ .segment, .translate, .narrate]),
             TaskSection(title: "Photo & Screen", tasks: [.chat, .screen, .compare, .extract]),
             TaskSection(title: "Video", tasks: [.video]),
         ]

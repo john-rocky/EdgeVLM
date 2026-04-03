@@ -190,22 +190,21 @@ struct ConversationView: View {
 
     private var capturedImagePreview: some View {
         Group {
-            #if os(iOS)
-            let uiImage = UIImage(ciImage: engine.capturedImage!)
-            Image(uiImage: uiImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxHeight: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            #elseif os(macOS)
             if let cgImage = renderCGImage(from: engine.capturedImage!) {
+                #if os(iOS)
+                Image(uiImage: UIImage(cgImage: cgImage))
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                #elseif os(macOS)
                 Image(nsImage: NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height)))
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxHeight: 200)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                #endif
             }
-            #endif
         }
     }
 
@@ -322,13 +321,11 @@ struct ConversationView: View {
 
     // MARK: - Helpers
 
-    #if os(macOS)
-    /// Render a CIImage to a CGImage for display on macOS.
+    /// Render a CIImage to a CGImage for display.
     private func renderCGImage(from ciImage: CIImage) -> CGImage? {
         let context = CIContext()
         return context.createCGImage(ciImage, from: ciImage.extent)
     }
-    #endif
 }
 
 #Preview {
