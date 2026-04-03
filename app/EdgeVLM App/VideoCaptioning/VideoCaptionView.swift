@@ -327,7 +327,7 @@ struct VideoCaptionView: View {
                     .italic()
             } else {
                 ForEach(displayedEntries) { entry in
-                    NavigationLink(destination: CaptionDetailView(entry: entry)) {
+                    NavigationLink(destination: CaptionDetailView(entry: entry, videoURL: videoURL)) {
                         entryRow(entry)
                     }
                 }
