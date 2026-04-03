@@ -114,6 +114,28 @@ struct TranslationView: View {
                                         .fontWeight(.regular)
                                     #endif
                             }
+
+                            if !engine.translatedText.isEmpty {
+                                Divider()
+                                HStack(spacing: 12) {
+                                    Button {
+                                        copyToClipboard(engine.translatedText)
+                                    } label: {
+                                        Label("Copy Translation", systemImage: "doc.on.doc")
+                                    }
+                                    .buttonStyle(.bordered)
+
+                                    ShareLink(
+                                        item: engine.translatedText,
+                                        preview: SharePreview("Translation")
+                                    ) {
+                                        Label("Share", systemImage: "square.and.arrow.up")
+                                    }
+                                    .buttonStyle(.bordered)
+
+                                    Spacer()
+                                }
+                            }
                         }
                         .frame(minHeight: 50)
                     } header: {
@@ -251,6 +273,17 @@ struct TranslationView: View {
         Task {
             await engine.translate(frame: frame, model: model)
         }
+    }
+
+    /// Copy text to the system clipboard.
+    func copyToClipboard(_ text: String) {
+        #if os(iOS)
+        UIPasteboard.general.string = text
+        #elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        #endif
     }
 
     /// Clear all translation results.

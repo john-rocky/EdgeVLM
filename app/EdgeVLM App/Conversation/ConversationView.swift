@@ -6,6 +6,7 @@
 import AVFoundation
 import CoreImage
 import MLXLMCommon
+import PhotosUI
 import SwiftUI
 import Video
 
@@ -29,6 +30,9 @@ struct ConversationView: View {
 
     /// Whether the keyboard / input field is focused.
     @FocusState private var isInputFocused: Bool
+
+    /// Photo library picker selection.
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
             VStack(spacing: 0) {
@@ -103,11 +107,26 @@ struct ConversationView: View {
 
             Spacer()
 
-            Text("Tap the shutter to capture an image and start a conversation.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding()
+            VStack(spacing: 12) {
+                Text("Tap the shutter to capture, or select from your library.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images
+                ) {
+                    Label("Photo Library", systemImage: "photo.on.rectangle")
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding()
+        }
+        .onChange(of: selectedPhotoItem) { _, newValue in
+            if let newValue {
+                loadPhoto(from: newValue)
+            }
         }
     }
 
@@ -245,6 +264,26 @@ struct ConversationView: View {
     private func captureFrame(_ frame: CVImageBuffer) {
         let ciImage = CIImage(cvPixelBuffer: frame)
         engine.capturedImage = ciImage
+    }
+
+    private func loadPhoto(from item: PhotosPickerItem) {
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+            #if os(iOS)
+            guard let uiImage = UIImage(data: data),
+                  let cgImage = uiImage.cgImage else { return }
+            #elseif os(macOS)
+            guard let nsImage = NSImage(data: data),
+                  let tiffData = nsImage.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData),
+                  let cgImage = bitmap.cgImage else { return }
+            #endif
+            let ciImage = CIImage(cgImage: cgImage)
+            await MainActor.run {
+                engine.capturedImage = ciImage
+                selectedPhotoItem = nil
+            }
+        }
     }
 
     private func sendMessage() {

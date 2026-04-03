@@ -265,6 +265,25 @@ struct ImageCompareView: View {
                         #endif
                 }
                 .frame(minHeight: 50, maxHeight: 300)
+
+                HStack(spacing: 12) {
+                    Button {
+                        copyToClipboard(resultText)
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                    }
+                    .buttonStyle(.bordered)
+
+                    ShareLink(
+                        item: resultText,
+                        preview: SharePreview("Comparison Result")
+                    ) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Spacer()
+                }
             } header: {
                 Text("Response")
                     #if os(macOS)
@@ -380,6 +399,16 @@ struct ImageCompareView: View {
                 isComparing = false
             }
         }
+    }
+
+    private func copyToClipboard(_ text: String) {
+        #if os(iOS)
+        UIPasteboard.general.string = text
+        #elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        #endif
     }
 
     private func clearAll() {
