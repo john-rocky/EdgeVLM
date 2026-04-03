@@ -69,7 +69,7 @@ struct ContentView: View {
                 model.cancel()
             }
 
-            // Camera feed
+            // Camera feed with caption overlay
             if let framesToDisplay {
                 VideoFrameView(
                     frames: framesToDisplay,
@@ -104,9 +104,7 @@ struct ContentView: View {
                     }
                     #endif
                     .overlay(alignment: .bottom) {
-                        if selectedCameraType == .continuous {
-                            statusBadge
-                        }
+                        captionOverlay
                     }
                     .padding(.horizontal)
                     #if os(macOS)
@@ -119,8 +117,10 @@ struct ContentView: View {
 
             Spacer(minLength: 0)
 
-            // Bottom panel: prompt + response
-            responsePanel
+            // Prompt editing panel (only when editing)
+            if isEditingPrompt {
+                promptEditPanel
+            }
         }
         .task {
             camera.start()
@@ -198,103 +198,98 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Status Badge
+    // MARK: - Caption Overlay
 
-    private var statusBadge: some View {
-        Group {
-            if model.evaluationState == .processingPrompt {
-                HStack {
+    private var captionOverlay: some View {
+        VStack(spacing: 6) {
+            // Status badge (continuous mode)
+            if selectedCameraType == .continuous {
+                HStack(spacing: 5) {
+                    if model.evaluationState == .processingPrompt {
+                        ProgressView()
+                            .tint(statusTextColor)
+                            .controlSize(.small)
+                    } else if model.evaluationState == .idle {
+                        Image(systemName: "clock.fill")
+                            .font(.caption2)
+                    } else {
+                        Image(systemName: "lightbulb.fill")
+                            .font(.caption2)
+                    }
+                    Text(model.evaluationState.rawValue)
+                        .font(.caption2)
+                }
+                .foregroundStyle(statusTextColor)
+                .bold()
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+                .background(statusBackgroundColor)
+                .clipShape(Capsule())
+            }
+
+            // Caption text
+            if model.output.isEmpty && model.running {
+                HStack(spacing: 6) {
                     ProgressView()
-                        .tint(statusTextColor)
+                        .tint(.white)
                         .controlSize(.small)
-                    Text(model.evaluationState.rawValue)
-                }
-            } else if model.evaluationState == .idle {
-                HStack(spacing: 6.0) {
-                    Image(systemName: "clock.fill")
+                    Text("Analyzing...")
                         .font(.caption)
-                    Text(model.evaluationState.rawValue)
+                        .bold()
+                        .foregroundStyle(.white)
                 }
-            } else {
-                HStack(spacing: 6.0) {
-                    Image(systemName: "lightbulb.fill")
-                        .font(.caption)
-                    Text(model.evaluationState.rawValue)
-                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.black.opacity(0.7))
+            } else if !model.output.isEmpty {
+                Text(model.output)
+                    .font(.subheadline)
+                    .bold()
+                    .foregroundStyle(.white)
+                    .lineLimit(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.black.opacity(0.7))
             }
         }
-        .foregroundStyle(statusTextColor)
-        .font(.caption)
-        .bold()
-        .padding(.vertical, 6.0)
-        .padding(.horizontal, 8.0)
-        .background(statusBackgroundColor)
-        .clipShape(.capsule)
-        .padding(.bottom)
+        .padding(.bottom, 8)
     }
 
-    // MARK: - Response Panel
+    // MARK: - Prompt Edit Panel
 
-    private var responsePanel: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if isEditingPrompt {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Prompt")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                    #if os(iOS)
-                    TextField("Prompt", text: $prompt, axis: .vertical)
-                        .lineLimit(2...4)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.subheadline)
-                    TextField("Suffix", text: $promptSuffix, axis: .vertical)
-                        .lineLimit(1...2)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.caption)
-                    #elseif os(macOS)
-                    HStack(alignment: .top, spacing: 8) {
-                        TextEditor(text: $prompt)
-                            .frame(height: 38)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(Color(.textBackgroundColor))
-                            .cornerRadius(8)
-                        TextEditor(text: $promptSuffix)
-                            .frame(height: 38)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(Color(.textBackgroundColor))
-                            .cornerRadius(8)
-                    }
-                    #endif
-                }
-            } else {
-                Text(prompt)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+    private var promptEditPanel: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Prompt")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+            #if os(iOS)
+            TextField("Prompt", text: $prompt, axis: .vertical)
+                .lineLimit(2...4)
+                .textFieldStyle(.roundedBorder)
+                .font(.subheadline)
+            TextField("Suffix", text: $promptSuffix, axis: .vertical)
+                .lineLimit(1...2)
+                .textFieldStyle(.roundedBorder)
+                .font(.caption)
+            #elseif os(macOS)
+            HStack(alignment: .top, spacing: 8) {
+                TextEditor(text: $prompt)
+                    .frame(height: 38)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(8)
+                TextEditor(text: $promptSuffix)
+                    .frame(height: 38)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(8)
             }
-
-            if model.output.isEmpty && model.running {
-                ProgressView()
-                    .controlSize(.small)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 4)
-            } else if !model.output.isEmpty {
-                Divider()
-                ScrollView {
-                    Text(model.output)
-                        .foregroundStyle(isEditingPrompt ? .secondary : .primary)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        #if os(macOS)
-                        .font(.headline)
-                        .fontWeight(.regular)
-                        #endif
-                }
-                .frame(maxHeight: 120)
-            }
+            #endif
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
