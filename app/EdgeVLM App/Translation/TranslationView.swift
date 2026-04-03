@@ -23,6 +23,8 @@ struct TranslationView: View {
     @State private var framesToDisplay: AsyncStream<CVImageBuffer>?
     @State private var engine = TranslationEngine()
     @State private var selectedLanguage: LanguageOption = .english
+    @State private var baseZoom: CGFloat = 1.0
+    @State private var showZoomLevel = false
 
     var body: some View {
             Form {
@@ -59,8 +61,40 @@ struct TranslationView: View {
                                     }
                                     .allowsHitTesting(false)
                                 }
+
+                                // Zoom level indicator
+                                if showZoomLevel {
+                                    VStack {
+                                        Text(String(format: "%.1fx", camera.zoomFactor))
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundStyle(.white)
+                                            .padding(.vertical, 4)
+                                            .padding(.horizontal, 8)
+                                            .background(Color.black.opacity(0.6))
+                                            .clipShape(Capsule())
+                                            .padding(.top, 8)
+                                        Spacer()
+                                    }
+                                }
                             }
                             .aspectRatio(9.0 / 16.0, contentMode: .fit)
+                            #if os(iOS)
+                            .gesture(
+                                MagnifyGesture()
+                                    .onChanged { value in
+                                        camera.zoomFactor = baseZoom * value.magnification
+                                        showZoomLevel = true
+                                    }
+                                    .onEnded { value in
+                                        baseZoom = camera.zoomFactor
+                                        Task {
+                                            try? await Task.sleep(for: .seconds(1.5))
+                                            showZoomLevel = false
+                                        }
+                                    }
+                            )
+                            #endif
                             #if os(macOS)
                                 .frame(maxWidth: 750)
                                 .frame(maxWidth: .infinity)

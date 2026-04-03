@@ -23,6 +23,26 @@ public class CameraController: NSObject {
     }
 
     public var devices = [AVCaptureDevice]()
+    public var zoomFactor: CGFloat = 1.0 {
+        didSet {
+            applyZoom(zoomFactor)
+        }
+    }
+
+    private func applyZoom(_ factor: CGFloat) {
+        #if os(iOS)
+        sessionQueue.async { [weak self] in
+            guard let self, let captureSession, let input = captureSession.inputs.first as? AVCaptureDeviceInput else { return }
+            let device = input.device
+            let clamped = max(device.minAvailableVideoZoomFactor, min(factor, min(device.maxAvailableVideoZoomFactor, 10.0)))
+            do {
+                try device.lockForConfiguration()
+                device.videoZoomFactor = clamped
+                device.unlockForConfiguration()
+            } catch {}
+        }
+        #endif
+    }
 
     public var device: AVCaptureDevice = AVCaptureDevice.default(for: .video)! {
         didSet {
