@@ -109,13 +109,13 @@ struct ARViewContainer: UIViewRepresentable {
             let dx = (max.x - min.x) / 2
             let dy = (max.y - min.y) / 2
             textNode.pivot = SCNMatrix4MakeTranslation(dx, dy, 0)
-            textNode.scale = SCNVector3(0.005, 0.005, 0.005)
+            textNode.scale = SCNVector3(0.01, 0.01, 0.01)
 
             // Semi-transparent background plane behind the text
             let bgNode = SCNNode(
                 geometry: SCNPlane(
-                    width: CGFloat(max.x - min.x + 2) * 0.005,
-                    height: CGFloat(max.y - min.y + 1) * 0.005
+                    width: CGFloat(max.x - min.x + 2) * 0.01,
+                    height: CGFloat(max.y - min.y + 1) * 0.01
                 )
             )
             bgNode.geometry?.firstMaterial?.diffuse.contents = UIColor.black.withAlphaComponent(0.7)

@@ -83,7 +83,7 @@ struct ARAnnotationView: View {
         let ciImage = CIImage(cvPixelBuffer: frame)
         let userInput = UserInput(
             prompt: .text(
-                "Describe the main object at the center of this image in 5 words or less."
+                "Describe the main object in this image in three or four words."
             ),
             images: [.ciImage(ciImage)]
         )
